@@ -32,7 +32,7 @@ public class OrdenCompraController {
 
     // ✅ Validar vigencia de una orden
     @GetMapping("/{id}/vigente")
-    public String validarVigencia(@PathVariable Long id) {
+    public String validarVigencia(@PathVariable("id") Long id) {
         boolean vigente = ordenCompraService.estaVigente(id);
         return vigente ? "La orden está vigente" : "La orden está expirada";
     }
