@@ -1,6 +1,3 @@
-Perfecto, Brian 🙌. Aquí tienes un **README.md inicial** que puedes copiar y pegar en tu repo. Está estructurado para documentar tu backend, las pruebas en Postman y el acceso a Swagger/OpenAPI:
-
-```markdown
 # 🛒 Perecederos Demo - Backend
 
 Proyecto de backend en **Spring Boot** para la gestión de inventario, recepciones y alertas de caducidad en piso de ventas.
@@ -96,10 +93,3 @@ Tech Lead & Backend Architect
 
 ---
 
-✅ Con este README ya tienes:
-- Guía de instalación.  
-- Tabla clara de endpoints.  
-- Instrucciones para Postman y Swagger.  
-- Roadmap y organización del proyecto.  
-
-👉 ¿Quieres que también te prepare el **archivo de colección Postman (`postman_collection.json`)** con todos los endpoints listos para importar?
