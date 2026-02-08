@@ -9,27 +9,27 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "recepcion")
-public class Recepcion {
+@Table(name = "inventario")
+public class Inventario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idRecepcion;
+    private Long idInventario;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_orden", nullable = false)
-    private OrdenCompra ordenCompra;
-
+    private String codigoBarras;
+    private String descripcion;
     private int cantidad;
-    private LocalDate fechaRecepcion;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaCaducidad;
+
     private String lote;
 
+    private LocalDate fechaLlegada;   // se asigna automáticamente
+
     @Enumerated(EnumType.STRING)
-    private EstadoRecepcion estado;
+    private Division division;
+
+    @Enumerated(EnumType.STRING)
+    private Departamento departamento;
 }

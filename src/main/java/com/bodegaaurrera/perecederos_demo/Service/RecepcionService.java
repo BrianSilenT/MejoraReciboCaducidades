@@ -15,19 +15,20 @@ public class RecepcionService {
 
     private final RecepcionRepository recepcionRepository;
     private final OrdenCompraRepository ordenCompraRepository;
+    private final InventarioService inventarioService; // 🔹 nuevo
 
     public RecepcionService(RecepcionRepository recepcionRepository,
-                            OrdenCompraRepository ordenCompraRepository) {
+                            OrdenCompraRepository ordenCompraRepository,
+                            InventarioService inventarioService) {
         this.recepcionRepository = recepcionRepository;
         this.ordenCompraRepository = ordenCompraRepository;
+        this.inventarioService = inventarioService;
     }
 
-    // 🔹 Listar todas las recepciones
     public List<Recepcion> listarRecepciones() {
         return recepcionRepository.findAll();
     }
 
-    // 🔹 Listar recepciones por estado
     public List<Recepcion> listarPorEstado(String estado) {
         return recepcionRepository.findByEstado(EstadoRecepcion.valueOf(estado));
     }
@@ -36,7 +37,10 @@ public class RecepcionService {
         return recepcionRepository.findByFechaCaducidadBefore(limite);
     }
 
-    // 🔹 Guardar recepción con validaciones
+    public List<Recepcion> listarPorCaducar(LocalDate limite) {
+        return recepcionRepository.findByFechaCaducidadBefore(limite);
+    }
+
     public Recepcion guardarRecepcion(Recepcion recepcion) {
         Long idOrden = recepcion.getOrdenCompra().getIdOrden();
         var orden = ordenCompraRepository.findById(idOrden)
@@ -51,24 +55,44 @@ public class RecepcionService {
             throw new IllegalArgumentException("La cantidad recibida excede la solicitada en la O.C.");
         }
 
+        if (recepcion.getFechaCaducidad() == null) {
+            throw new IllegalArgumentException("La recepción debe incluir fecha de caducidad válida.");
+        }
+
+        if (recepcion.getFechaRecepcion() == null) {
+            recepcion.setFechaRecepcion(LocalDate.now()); // opcional: setear fecha actual
+        }
+
         long diasVida = ChronoUnit.DAYS.between(
                 recepcion.getFechaRecepcion(),
-                recepcion.getFechaCaducidad()
-        );
+                recepcion.getFechaCaducidad());
+
         if (diasVida < 10) {
             throw new IllegalArgumentException("El producto tiene menos de 10 días de vida útil.");
+        }
+
+        // 🔹 Validar duplicados de lote con misma fecha de caducidad
+        boolean existeDuplicado = recepcionRepository
+                .findByProductoAndLoteAndFechaCaducidad(
+                        recepcion.getProducto(),
+                        recepcion.getLote(),
+                        recepcion.getFechaCaducidad()
+                ).isPresent();
+
+        if (existeDuplicado) {
+            throw new IllegalArgumentException(
+                    "Ya existe una recepción para este lote con la misma fecha de caducidad."
+            );
         }
 
         recepcion.setEstado(EstadoRecepcion.ACEPTADA);
         recepcion.setOrdenCompra(orden);
 
-        return recepcionRepository.save(recepcion);
+        Recepcion guardada = recepcionRepository.save(recepcion);
+
+        // 🔹 Integración automática al inventario
+        inventarioService.cargarInventarioDesdeRecepcion(guardada);
+
+        return guardada;
     }
-
-    LocalDate limite = LocalDate.now().plusDays(3);
-    public List<Recepcion> listarPorCaducar(LocalDate limite) {
-        return recepcionRepository.findByFechaCaducidadBefore(limite);
-    }
-
-
 }
