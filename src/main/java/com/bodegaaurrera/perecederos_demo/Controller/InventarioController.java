@@ -1,14 +1,14 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
+import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.AlertaInventario;
 import com.bodegaaurrera.perecederos_demo.Model.Inventario;
 import com.bodegaaurrera.perecederos_demo.Service.InventarioService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/inventario")
 public class InventarioController {
@@ -19,48 +19,47 @@ public class InventarioController {
         this.inventarioService = inventarioService;
     }
 
-    // 🔹 Consultar inventario por código de barras
-    @GetMapping("/{codigoBarras}")
-    public Inventario consultar(@PathVariable("codigoBarras") String codigoBarras) {
-        return inventarioService.consultarInventario(codigoBarras);
+    // ✅ Listar todo el inventario
+    @GetMapping
+    public ApiResponse<List<Inventario>> listarInventario() {
+        return new ApiResponse<>(inventarioService.listarTodo());
     }
 
-    // 🔹 Listar inventario por división
-    @GetMapping("/division/{division}")
-    public List<Inventario> listarPorDivision(@PathVariable("division") String division) {
-        return inventarioService.obtenerPorDivision(division);
+    // ✅ Listar productos caducados
+    @GetMapping("/caducados")
+    public ApiResponse<List<Inventario>> listarCaducados(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate limite) {
+        return new ApiResponse<>(inventarioService.listarPorCaducar(limite));
     }
 
-    // 🔹 Listar inventario por departamento
-    @GetMapping("/departamento/{departamento}")
-    public List<Inventario> listarPorDepartamento(@PathVariable("departamento") String departamento) {
-        return inventarioService.obtenerPorDepartamento(departamento);
+    // ✅ Listar productos próximos a caducar
+    @GetMapping("/por-caducar")
+    public ApiResponse<List<Inventario>> listarPorCaducar(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate limite) {
+        return new ApiResponse<>(inventarioService.listarPorCaducar(limite));
     }
 
-    // 🔹 Listar productos próximos a caducar (ej. dentro de X días)
-    @GetMapping("/por-caducar/{dias}")
-    public List<Inventario> listarPorCaducar(@PathVariable int dias) {
-        LocalDate limite = LocalDate.now().plusDays(dias);
-        return inventarioService.listarPorCaducar(limite);
-    }
-
+    // ✅ Generar alertas automáticas
     @GetMapping("/alertas")
-    public List<AlertaInventario> obtenerAlertasCaducidad() {
-        return inventarioService.generarAlertasCaducidad();
+    public ApiResponse<List<AlertaInventario>> obtenerAlertas() {
+        return new ApiResponse<>(inventarioService.generarAlertasCaducidad());
     }
 
-    // 🔹 Nuevo: Alertas automáticas para piso de ventas
-    //@GetMapping("/alertas")
-    //public List<Map<String, Object>> obtenerAlertasCaducidad() {
-      //  return inventarioService.generarAlertasCaducidad();
-    //}
+    // ✅ Buscar inventario por código de barras
+    @GetMapping("/buscar")
+    public ApiResponse<Inventario> obtenerPorCodigoBarras(@RequestParam String codigoBarras) {
+        return new ApiResponse<>(inventarioService.obtenerPorCodigoBarras(codigoBarras));
+    }
 
-    // 🔹 Opcional: Tabla de control ordenada por fecha de caducidad
-    @GetMapping("/control-caducidad")
-    public List<Inventario> listarPorFechaCaducidad() {
-        return inventarioService.listarPorCaducar(LocalDate.now().plusYears(1))
-                .stream()
-                .sorted(java.util.Comparator.comparing(Inventario::getFechaCaducidad))
-                .toList();
+    // ✅ Filtrar por división
+    @GetMapping("/division")
+    public ApiResponse<List<Inventario>> obtenerPorDivision(@RequestParam String division) {
+        return new ApiResponse<>(inventarioService.obtenerPorDivision(division));
+    }
+
+    // ✅ Filtrar por departamento
+    @GetMapping("/departamento")
+    public ApiResponse<List<Inventario>> obtenerPorDepartamento(@RequestParam String departamento) {
+        return new ApiResponse<>(inventarioService.obtenerPorDepartamento(departamento));
     }
 }

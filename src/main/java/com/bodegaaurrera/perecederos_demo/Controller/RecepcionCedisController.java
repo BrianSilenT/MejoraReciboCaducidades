@@ -1,5 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
+import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.RecepcionCedis;
 import com.bodegaaurrera.perecederos_demo.Service.RecepcionCedisService;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +18,26 @@ public class RecepcionCedisController {
     }
 
     @PostMapping
-    public RecepcionCedis registrarRecepcion(@RequestBody RecepcionCedis recepcion) {
-        return recepcionCedisService.registrarRecepcion(recepcion);
+    public ApiResponse<RecepcionCedis> registrarRecepcion(@RequestBody RecepcionCedis recepcion) {
+        RecepcionCedis nueva = recepcionCedisService.registrarRecepcion(recepcion);
+        return new ApiResponse<>(nueva);
     }
 
     @GetMapping("/camion/{numeroCamion}")
-    public List<RecepcionCedis> obtenerPorCamion(@PathVariable String numeroCamion) {
-        return recepcionCedisService.obtenerPorCamion(numeroCamion);
+    public ApiResponse<List<RecepcionCedis>> obtenerPorCamion(@PathVariable String numeroCamion) {
+        List<RecepcionCedis> recepciones = recepcionCedisService.obtenerPorCamion(numeroCamion);
+        return new ApiResponse<>(recepciones);
     }
 
     @GetMapping("/departamento/{departamento}")
-    public List<RecepcionCedis> obtenerPorDepartamento(@PathVariable String departamento) {
-        return recepcionCedisService.obtenerPorDepartamento(departamento);
+    public ApiResponse<List<RecepcionCedis>> obtenerPorDepartamento(@PathVariable String departamento) {
+        List<RecepcionCedis> recepciones = recepcionCedisService.obtenerPorDepartamento(departamento);
+        return new ApiResponse<>(recepciones);
     }
 
     @GetMapping("/division/{division}")
-    public List<RecepcionCedis> obtenerPorDivision(@PathVariable String division) {
-        return recepcionCedisService.obtenerPorDivision(division);
+    public ApiResponse<List<RecepcionCedis>> obtenerPorDivision(@PathVariable String division) {
+        List<RecepcionCedis> recepciones = recepcionCedisService.obtenerPorDivision(division);
+        return new ApiResponse<>(recepciones);
     }
 }

@@ -28,7 +28,23 @@ public class InventarioService {
         this.inventarioRepository = inventarioRepository;
     }
 
-    // 🔹 Cargar inventario desde recepción de proveedor
+    // ✅ Listar todo el inventario
+    public List<Inventario> listarTodo() {
+        return inventarioRepository.findAll();
+    }
+
+    // ✅ Registrar nuevo inventario
+    public Inventario registrar(Inventario inventario) {
+        return inventarioRepository.save(inventario);
+    }
+
+    // ✅ Consultar inventario por código de barras
+    public Inventario obtenerPorCodigoBarras(String codigoBarras) {
+        return inventarioRepository.findByCodigoBarras(codigoBarras)
+                .orElseThrow(() -> new IllegalArgumentException("Inventario no encontrado para código: " + codigoBarras));
+    }
+
+    // ✅ Cargar inventario desde recepción de proveedor
     public void cargarInventarioDesdeRecepcion(Recepcion recepcion) {
         Inventario inv = inventarioRepository
                 .findByCodigoBarrasAndLote(
@@ -44,13 +60,16 @@ public class InventarioService {
         inv.setFechaLlegada(LocalDate.now());
         inv.setCantidad(inv.getCantidad() + recepcion.getCantidad());
 
-        // Aquí podrías asignar departamento si OrdenCompra lo tiene
-        // inv.setDepartamento(recepcion.getOrdenCompra().getDepartamento());
+        // 🔹 Si la orden tiene departamento/división, asignarlos
+        if (recepcion.getOrdenCompra() != null) {
+            inv.setDivision(recepcion.getOrdenCompra().getDivision());
+            inv.setDepartamento(recepcion.getOrdenCompra().getDepartamento());
+        }
 
         inventarioRepository.save(inv);
     }
 
-    // 🔹 Cargar inventario desde recepción de CEDIS
+    // ✅ Cargar inventario desde recepción de CEDIS
     public void cargarInventarioDesdeRecepcionCedis(RecepcionCedis recepcion, List<Inventario> itemsRecibidos) {
         for (Inventario item : itemsRecibidos) {
             item.setDivision(recepcion.getDivision());
@@ -60,19 +79,12 @@ public class InventarioService {
         }
     }
 
-    // 🔹 Consultar inventario por código de barras
-    public Inventario consultarInventario(String codigoBarras) {
-        return inventarioRepository.findByCodigoBarras(codigoBarras)
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado en inventario"));
-    }
-
-    // 🔹 Listar productos próximos a caducar
+    // ✅ Listar productos próximos a caducar
     public List<Inventario> listarPorCaducar(LocalDate limite) {
         return inventarioRepository.findByFechaCaducidadBefore(limite);
     }
-    // InventarioService.java
 
-    // 🔹 Listar inventario por división
+    // ✅ Listar inventario por división
     public List<Inventario> obtenerPorDivision(String division) {
         return inventarioRepository.findAll().stream()
                 .filter(inv -> inv.getDivision() != null &&
@@ -80,7 +92,7 @@ public class InventarioService {
                 .toList();
     }
 
-    // 🔹 Listar inventario por departamento
+    // ✅ Listar inventario por departamento
     public List<Inventario> obtenerPorDepartamento(String departamento) {
         return inventarioRepository.findAll().stream()
                 .filter(inv -> inv.getDepartamento() != null &&
@@ -88,14 +100,15 @@ public class InventarioService {
                 .toList();
     }
 
-    // 🔹 Generar alertas automáticas
+    // ✅ Generar alertas automáticas de caducidad
     public List<AlertaInventario> generarAlertasCaducidad() {
         LocalDate hoy = LocalDate.now();
         List<Inventario> todos = inventarioRepository.findAll();
 
         return todos.stream().map(inv -> {
             int diasPolitica = POLITICAS_RETIRO.entrySet().stream()
-                    .filter(e -> inv.getDescripcion().toLowerCase().contains(e.getKey().toLowerCase()))
+                    .filter(e -> inv.getDescripcion() != null &&
+                            inv.getDescripcion().toLowerCase().contains(e.getKey().toLowerCase()))
                     .map(Map.Entry::getValue)
                     .findFirst()
                     .orElse(5);

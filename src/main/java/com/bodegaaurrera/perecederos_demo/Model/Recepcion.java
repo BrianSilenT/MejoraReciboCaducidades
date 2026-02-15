@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Getter
@@ -16,20 +17,23 @@ public class Recepcion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRecepcion;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_orden", nullable = false)
-    private OrdenCompra ordenCompra;
-
+    private String lote;
     private int cantidad;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaRecepcion;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaCaducidad;
-    private String lote;
 
     @Enumerated(EnumType.STRING)
     private EstadoRecepcion estado;
+
+    @ManyToOne
+    @JoinColumn(name = "idOrden")
+    private OrdenCompra ordenCompra;
+
+    @ManyToOne
+    @JoinColumn(name = "idProducto")
+    private Producto producto;
 }

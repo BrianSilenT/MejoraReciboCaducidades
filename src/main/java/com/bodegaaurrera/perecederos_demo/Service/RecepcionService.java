@@ -15,7 +15,7 @@ public class RecepcionService {
 
     private final RecepcionRepository recepcionRepository;
     private final OrdenCompraRepository ordenCompraRepository;
-    private final InventarioService inventarioService; // 🔹 nuevo
+    private final InventarioService inventarioService;
 
     public RecepcionService(RecepcionRepository recepcionRepository,
                             OrdenCompraRepository ordenCompraRepository,
@@ -25,12 +25,13 @@ public class RecepcionService {
         this.inventarioService = inventarioService;
     }
 
-    public List<Recepcion> listarRecepciones() {
+    // ✅ nombre consistente con el controller
+    public List<Recepcion> listarTodas() {
         return recepcionRepository.findAll();
     }
 
     public List<Recepcion> listarPorEstado(String estado) {
-        return recepcionRepository.findByEstado(EstadoRecepcion.valueOf(estado));
+        return recepcionRepository.findByEstado(EstadoRecepcion.valueOf(estado.toUpperCase()));
     }
 
     public List<Recepcion> listarCaducadas(LocalDate limite) {
@@ -41,7 +42,8 @@ public class RecepcionService {
         return recepcionRepository.findByFechaCaducidadBefore(limite);
     }
 
-    public Recepcion guardarRecepcion(Recepcion recepcion) {
+    // ✅ nombre consistente con el controller
+    public Recepcion registrar(Recepcion recepcion) {
         Long idOrden = recepcion.getOrdenCompra().getIdOrden();
         var orden = ordenCompraRepository.findById(idOrden)
                 .orElseThrow(() -> new IllegalArgumentException("Orden de compra no encontrada"));
@@ -60,7 +62,7 @@ public class RecepcionService {
         }
 
         if (recepcion.getFechaRecepcion() == null) {
-            recepcion.setFechaRecepcion(LocalDate.now()); // opcional: setear fecha actual
+            recepcion.setFechaRecepcion(LocalDate.now());
         }
 
         long diasVida = ChronoUnit.DAYS.between(
@@ -71,7 +73,6 @@ public class RecepcionService {
             throw new IllegalArgumentException("El producto tiene menos de 10 días de vida útil.");
         }
 
-        // 🔹 Validar duplicados de lote con misma fecha de caducidad
         boolean existeDuplicado = recepcionRepository
                 .findByProductoAndLoteAndFechaCaducidad(
                         recepcion.getProducto(),

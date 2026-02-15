@@ -17,16 +17,12 @@ public class OrdenCompraService {
         this.ordenCompraRepository = ordenCompraRepository;
     }
 
+    // ✅ Listar todas las órdenes
     public List<OrdenCompra> listarOrdenes() {
         return ordenCompraRepository.findAll();
     }
 
-    // Guardar orden (alias registrarOrden)
-    public OrdenCompra guardarOrden(OrdenCompra orden) {
-        return registrarOrden(orden);
-    }
-
-    // Registrar nueva orden
+    // ✅ Registrar nueva orden
     public OrdenCompra registrarOrden(OrdenCompra orden) {
         if (orden.getFechaEmision() == null) {
             orden.setFechaEmision(LocalDate.now());
@@ -35,22 +31,24 @@ public class OrdenCompraService {
         return ordenCompraRepository.save(orden);
     }
 
-    // Buscar orden por ID
+    // ✅ Buscar orden por ID
     public OrdenCompra buscarPorId(Long id) {
         return ordenCompraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Orden de compra no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Orden de compra no encontrada con id: " + id));
     }
 
-    // Validar vigencia de una orden
+    // ✅ Validar vigencia de una orden
     public boolean estaVigente(Long idOrden) {
         OrdenCompra orden = buscarPorId(idOrden);
         LocalDate limite = orden.getFechaEmision().plusDays(orden.getVigenciaDias());
         return !LocalDate.now().isAfter(limite) && orden.getEstado() == EstadoOrden.VIGENTE;
     }
 
-    // Actualizar estado manualmente
+    // ✅ Actualizar estado con Enum directamente
     public OrdenCompra actualizarEstado(Long id, EstadoOrden nuevoEstado) {
-        OrdenCompra orden = buscarPorId(id);
+        OrdenCompra orden = ordenCompraRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Orden de compra no encontrada con id: " + id));
+
         orden.setEstado(nuevoEstado);
         return ordenCompraRepository.save(orden);
     }

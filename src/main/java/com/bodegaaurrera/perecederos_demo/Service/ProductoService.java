@@ -14,11 +14,13 @@ public class ProductoService {
         this.productoRepository = productoRepository;
     }
 
-    public List<Producto> listarProductos() {
+    public List<Producto> listarTodos() {
         return productoRepository.findAll();
     }
 
-    public Producto guardarProducto(Producto producto) {
+
+    public Producto registrar(Producto producto) {
         return productoRepository.save(producto);
     }
+
 }

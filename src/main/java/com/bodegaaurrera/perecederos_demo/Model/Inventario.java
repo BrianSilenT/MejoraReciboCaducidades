@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Getter
@@ -25,7 +26,8 @@ public class Inventario {
 
     private String lote;
 
-    private LocalDate fechaLlegada;   // se asigna automáticamente
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaLlegada;   // se asigna automáticamente al registrar
 
     @Enumerated(EnumType.STRING)
     private Division division;
