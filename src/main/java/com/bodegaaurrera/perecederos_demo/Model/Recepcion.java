@@ -1,11 +1,13 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,14 +19,8 @@ public class Recepcion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRecepcion;
 
-    private String lote;
-    private int cantidad;
-
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaRecepcion;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate fechaCaducidad;
 
     @Enumerated(EnumType.STRING)
     private EstadoRecepcion estado;
@@ -33,7 +29,8 @@ public class Recepcion {
     @JoinColumn(name = "idOrden")
     private OrdenCompra ordenCompra;
 
-    @ManyToOne
-    @JoinColumn(name = "idProducto")
-    private Producto producto;
+    // 🔹 Relación con los productos recibidos
+    @OneToMany(mappedBy = "recepcion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<RecepcionDetalle> productos;
 }

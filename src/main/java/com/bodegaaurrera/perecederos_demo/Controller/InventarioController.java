@@ -45,9 +45,8 @@ public class InventarioController {
         return new ApiResponse<>(inventarioService.generarAlertasCaducidad());
     }
 
-    // ✅ Buscar inventario por código de barras
     @GetMapping("/buscar")
-    public ApiResponse<Inventario> obtenerPorCodigoBarras(@RequestParam String codigoBarras) {
+    public ApiResponse<List<Inventario>> obtenerPorCodigoBarras(@RequestParam String codigoBarras) {
         return new ApiResponse<>(inventarioService.obtenerPorCodigoBarras(codigoBarras));
     }
 

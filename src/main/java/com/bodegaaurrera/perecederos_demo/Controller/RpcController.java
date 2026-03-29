@@ -6,6 +6,8 @@ import com.bodegaaurrera.perecederos_demo.Service.RpcService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/rpc")
 public class RpcController {
@@ -44,5 +46,10 @@ public class RpcController {
     public ApiResponse<List<RpcControl>> obtenerPorCamion(@PathVariable String numeroCamion) {
         List<RpcControl> rpcPorCamion = rpcService.obtenerPorCamion(numeroCamion);
         return new ApiResponse<>(rpcPorCamion);
+    }
+    @GetMapping("/resumen")
+    public ApiResponse<Map<String, Object>> obtenerResumen() {
+        Map<String, Object> resumen = rpcService.obtenerResumen();
+        return new ApiResponse<>(resumen);
     }
 }

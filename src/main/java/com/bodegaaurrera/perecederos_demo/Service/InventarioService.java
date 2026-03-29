@@ -1,9 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Service;
 
-import com.bodegaaurrera.perecederos_demo.Model.AlertaInventario;
-import com.bodegaaurrera.perecederos_demo.Model.Inventario;
-import com.bodegaaurrera.perecederos_demo.Model.Recepcion;
-import com.bodegaaurrera.perecederos_demo.Model.RecepcionCedis;
+import com.bodegaaurrera.perecederos_demo.Model.*;
 import com.bodegaaurrera.perecederos_demo.Repository.InventarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -38,32 +35,33 @@ public class InventarioService {
         return inventarioRepository.save(inventario);
     }
 
-    // ✅ Consultar inventario por código de barras
-    public Inventario obtenerPorCodigoBarras(String codigoBarras) {
-        return inventarioRepository.findByCodigoBarras(codigoBarras)
-                .orElseThrow(() -> new IllegalArgumentException("Inventario no encontrado para código: " + codigoBarras));
+    // ✅ Consultar inventario por código de barras (varios lotes)
+    public List<Inventario> obtenerPorCodigoBarras(String codigoBarras) {
+        return inventarioRepository.findByCodigoBarras(codigoBarras);
     }
 
-    // ✅ Cargar inventario desde recepción de proveedor
-    public void cargarInventarioDesdeRecepcion(Recepcion recepcion) {
+    // ✅ Cargar inventario desde RecepcionDetalle
+    public void cargarInventarioDesdeRecepcion(RecepcionDetalle detalle) {
         Inventario inv = inventarioRepository
                 .findByCodigoBarrasAndLote(
-                        recepcion.getProducto().getCodigoBarras(),
-                        recepcion.getLote()
+                        detalle.getProducto().getCodigoBarras(),
+                        detalle.getLote()
                 )
                 .orElse(new Inventario());
 
-        inv.setCodigoBarras(recepcion.getProducto().getCodigoBarras());
-        inv.setDescripcion(recepcion.getProducto().getDescripcion());
-        inv.setLote(recepcion.getLote());
-        inv.setFechaCaducidad(recepcion.getFechaCaducidad());
+        inv.setCodigoBarras(detalle.getProducto().getCodigoBarras());
+        inv.setDescripcion(detalle.getProducto().getDescripcion());
+        inv.setLote(detalle.getLote());
+        inv.setFechaCaducidad(detalle.getFechaCaducidad());
         inv.setFechaLlegada(LocalDate.now());
-        inv.setCantidad(inv.getCantidad() + recepcion.getCantidad());
+        inv.setCantidad(inv.getCantidad() + detalle.getCantidadRecibida());
 
-        // 🔹 Si la orden tiene departamento/división, asignarlos
-        if (recepcion.getOrdenCompra() != null) {
-            inv.setDivision(recepcion.getOrdenCompra().getDivision());
-            inv.setDepartamento(recepcion.getOrdenCompra().getDepartamento());
+        // 🔹 Si el producto tiene división/departamento, asignarlos
+        if (detalle.getProducto().getDivision() != null) {
+            inv.setDivision(detalle.getProducto().getDivision());
+        }
+        if (detalle.getProducto().getDepartamento() != null) {
+            inv.setDepartamento(detalle.getProducto().getDepartamento());
         }
 
         inventarioRepository.save(inv);

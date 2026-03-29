@@ -6,7 +6,9 @@ import com.bodegaaurrera.perecederos_demo.Repository.RpcControlRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RpcService {
@@ -69,5 +71,25 @@ public class RpcService {
     // ✅ Listar todas las RPC
     public List<RpcControl> listarTodas() {
         return rpcRepository.findAll();
+    }
+
+    public Map<String, Object> obtenerResumen() {
+        Map<String, Object> resumen = new HashMap<>();
+
+        Long totalRegistradas = rpcRepository.count();
+        Long totalPendientes = rpcRepository.countByPendienteRetorno(true);
+        Long totalCompletadas = rpcRepository.countByPendienteRetorno(false);
+        Long totalEntregado = rpcRepository.sumCantidadEntregada();
+        Long totalRetornado = rpcRepository.sumCantidadRetornada();
+        Long totalFaltante = totalEntregado - totalRetornado;
+
+        resumen.put("total_registradas", totalRegistradas);
+        resumen.put("total_pendientes", totalPendientes);
+        resumen.put("total_completadas", totalCompletadas);
+        resumen.put("total_entregado", totalEntregado);
+        resumen.put("total_retornado", totalRetornado);
+        resumen.put("total_faltante", totalFaltante);
+
+        return resumen;
     }
 }

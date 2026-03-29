@@ -2,6 +2,7 @@ package com.bodegaaurrera.perecederos_demo.Service;
 
 import com.bodegaaurrera.perecederos_demo.Model.EstadoRecepcion;
 import com.bodegaaurrera.perecederos_demo.Model.Recepcion;
+import com.bodegaaurrera.perecederos_demo.Model.RecepcionDetalle;
 import com.bodegaaurrera.perecederos_demo.Repository.RecepcionRepository;
 import com.bodegaaurrera.perecederos_demo.Repository.OrdenCompraRepository;
 import org.springframework.stereotype.Service;
@@ -34,14 +35,6 @@ public class RecepcionService {
         return recepcionRepository.findByEstado(EstadoRecepcion.valueOf(estado.toUpperCase()));
     }
 
-    public List<Recepcion> listarCaducadas(LocalDate limite) {
-        return recepcionRepository.findByFechaCaducidadBefore(limite);
-    }
-
-    public List<Recepcion> listarPorCaducar(LocalDate limite) {
-        return recepcionRepository.findByFechaCaducidadBefore(limite);
-    }
-
     // ✅ nombre consistente con el controller
     public Recepcion registrar(Recepcion recepcion) {
         Long idOrden = recepcion.getOrdenCompra().getIdOrden();
@@ -53,47 +46,45 @@ public class RecepcionService {
             throw new IllegalArgumentException("La orden de compra está expirada.");
         }
 
-        if (recepcion.getCantidad() > orden.getCantidadSolicitada()) {
-            throw new IllegalArgumentException("La cantidad recibida excede la solicitada en la O.C.");
-        }
-
-        if (recepcion.getFechaCaducidad() == null) {
-            throw new IllegalArgumentException("La recepción debe incluir fecha de caducidad válida.");
-        }
-
         if (recepcion.getFechaRecepcion() == null) {
             recepcion.setFechaRecepcion(LocalDate.now());
         }
 
-        long diasVida = ChronoUnit.DAYS.between(
-                recepcion.getFechaRecepcion(),
-                recepcion.getFechaCaducidad());
+        for (RecepcionDetalle detalle : recepcion.getProductos()) {
+            var productoOrden = orden.getProductos().stream()
+                    .filter(po -> po.getProducto().getCodigoBarras().equals(detalle.getProducto().getCodigoBarras()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Producto no pertenece a la orden"));
 
-        if (diasVida < 10) {
-            throw new IllegalArgumentException("El producto tiene menos de 10 días de vida útil.");
-        }
+            if (detalle.getCantidadRecibida() > productoOrden.getCantidadEsperada()) {
+                throw new IllegalArgumentException("Cantidad recibida excede la solicitada en la O.C.");
+            }
 
-        boolean existeDuplicado = recepcionRepository
-                .findByProductoAndLoteAndFechaCaducidad(
-                        recepcion.getProducto(),
-                        recepcion.getLote(),
-                        recepcion.getFechaCaducidad()
-                ).isPresent();
+            if (detalle.getFechaCaducidad() == null) {
+                throw new IllegalArgumentException("La recepción debe incluir fecha de caducidad válida.");
+            }
 
-        if (existeDuplicado) {
-            throw new IllegalArgumentException(
-                    "Ya existe una recepción para este lote con la misma fecha de caducidad."
+            long diasVida = ChronoUnit.DAYS.between(
+                    recepcion.getFechaRecepcion(),
+                    detalle.getFechaCaducidad()
             );
+
+            if (diasVida < 10) {
+                throw new IllegalArgumentException("El producto tiene menos de 10 días de vida útil.");
+            }
+
+            // 🔹 Integrar descripción desde la orden/producto
+            detalle.getProducto().setDescripcion(productoOrden.getProducto().getDescripcion());
+
+            // Cargar en inventario con descripción
+            inventarioService.cargarInventarioDesdeRecepcion(detalle);
+
+            detalle.setRecepcion(recepcion);
         }
 
         recepcion.setEstado(EstadoRecepcion.ACEPTADA);
         recepcion.setOrdenCompra(orden);
 
-        Recepcion guardada = recepcionRepository.save(recepcion);
-
-        // 🔹 Integración automática al inventario
-        inventarioService.cargarInventarioDesdeRecepcion(guardada);
-
-        return guardada;
+        return recepcionRepository.save(recepcion);
     }
 }

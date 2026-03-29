@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-public class PerecederosDemoApplication {
+public class 	PerecederosDemoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PerecederosDemoApplication.class, args);

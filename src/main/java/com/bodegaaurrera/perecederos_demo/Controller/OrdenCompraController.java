@@ -41,6 +41,13 @@ public class OrdenCompraController {
         return new ApiResponse<>(mensaje);
     }
 
+    // ✅ Obtener una orden por ID
+    @GetMapping("/{id}")
+    public ApiResponse<OrdenCompra> obtenerOrden(@PathVariable Long id) {
+        OrdenCompra orden = ordenCompraService.buscarPorId(id);
+        return new ApiResponse<>(orden);
+    }
+
     // ✅ Actualizar estado de una orden
     @PutMapping("/{id}/estado")
     public ApiResponse<OrdenCompra> actualizarEstado(@PathVariable Long id, @RequestBody EstadoOrdenRequest request) {

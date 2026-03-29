@@ -24,6 +24,12 @@ public class RpcControl {
     @Enumerated(EnumType.STRING)
     private Departamento departamento; // Enum: FRUTAS, VERDURAS, etc.
 
+    @NotBlank
+    @Column(name = "tipo_rpc")
+    @Enumerated(EnumType.STRING)
+    private TipoRpc tipoRpc;
+
+
     @Min(1)
     private int cantidadEntregada;
 
