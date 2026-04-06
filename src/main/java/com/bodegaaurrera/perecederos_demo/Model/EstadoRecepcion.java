@@ -4,6 +4,7 @@ public enum EstadoRecepcion {
     ACEPTADA,
     RECHAZADA,
     PENDIENTE,
-    PARCIAL
+    PARCIAL,
+    CERRADA
 
 }

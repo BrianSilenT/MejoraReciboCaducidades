@@ -18,38 +18,27 @@ public class RpcController {
         this.rpcService = rpcService;
     }
 
-    @PostMapping("/entrega")
-    public ApiResponse<RpcControl> registrarEntrega(@RequestBody RpcControl rpc) {
-        RpcControl nuevo = rpcService.registrarEntrega(rpc);
-        return new ApiResponse<>(nuevo);
-    }
-
-    @PutMapping("/retorno/{idRpc}")
-    public ApiResponse<RpcControl> registrarRetorno(@PathVariable Long idRpc, @RequestParam int cantidadRetornada) {
-        RpcControl actualizado = rpcService.registrarRetorno(idRpc, cantidadRetornada);
-        return new ApiResponse<>(actualizado);
-    }
-
-    @GetMapping("/pendientes")
-    public ApiResponse<List<RpcControl>> obtenerPendientes() {
-        List<RpcControl> pendientes = rpcService.obtenerPendientes();
-        return new ApiResponse<>(pendientes);
-    }
-
-    @GetMapping("/completados")
-    public ApiResponse<List<RpcControl>> obtenerCompletados() {
-        List<RpcControl> completados = rpcService.obtenerCompletados();
-        return new ApiResponse<>(completados);
-    }
-
-    @GetMapping("/camion/{numeroCamion}")
-    public ApiResponse<List<RpcControl>> obtenerPorCamion(@PathVariable String numeroCamion) {
-        List<RpcControl> rpcPorCamion = rpcService.obtenerPorCamion(numeroCamion);
-        return new ApiResponse<>(rpcPorCamion);
-    }
+    // DASHBOARD: Resumen de totales (KPIs)
     @GetMapping("/resumen")
     public ApiResponse<Map<String, Object>> obtenerResumen() {
-        Map<String, Object> resumen = rpcService.obtenerResumen();
-        return new ApiResponse<>(resumen);
+        return new ApiResponse<>(rpcService.obtenerResumen());
+    }
+
+    // BANDEJA 1: Lo que está en Cedis/Tienda (Enviado pero no vuelto)
+    @GetMapping("/pendientes")
+    public ApiResponse<List<RpcControl>> obtenerPendientes() {
+        return new ApiResponse<>(rpcService.obtenerPendientes());
+    }
+
+    // BANDEJA 2: Lo que ya regresó físicamente
+    @GetMapping("/completados")
+    public ApiResponse<List<RpcControl>> obtenerCompletados() {
+        return new ApiResponse<>(rpcService.obtenerCompletados());
+    }
+
+    // ACCIÓN: El movimiento de "Enviado" -> "Recibido"
+    @PutMapping("/retorno/{idRpc}")
+    public ApiResponse<RpcControl> registrarRetorno(@PathVariable Long idRpc, @RequestParam int cantidadRetornada) {
+        return new ApiResponse<>(rpcService.registrarRetorno(idRpc, cantidadRetornada));
     }
 }

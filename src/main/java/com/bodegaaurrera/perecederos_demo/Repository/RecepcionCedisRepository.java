@@ -5,14 +5,19 @@ import com.bodegaaurrera.perecederos_demo.Model.Departamento;
 import com.bodegaaurrera.perecederos_demo.Model.Division;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface RecepcionCedisRepository extends JpaRepository<RecepcionCedis, Long> {
-    List<RecepcionCedis> findByNumeroCamion(String numeroCamion);
+    @Query("SELECT DISTINCT r FROM RecepcionCedis r LEFT JOIN FETCH r.detalles WHERE r.numeroCamion = :numeroCamion")
+    List<RecepcionCedis> findByNumeroCamion(@Param("numeroCamion") String numeroCamion);
     List<RecepcionCedis> findByDepartamento(Departamento departamento);
     List<RecepcionCedis> findByDivision(Division division);
     List<RecepcionCedis> findByNumeroCamionAndDepartamentoIn(String numeroCamion, List<Departamento> departamentos);
+
+    List<RecepcionCedis> findByNumeroCamionAndDepartamento(String numeroCamion, Departamento departamento);
+
 
     // ✅ Método correcto, sin static ni cuerpo
     @Query("SELECT DISTINCT r.numeroCamion FROM RecepcionCedis r WHERE r.estado = 'EN_DESEMBARQUE'")

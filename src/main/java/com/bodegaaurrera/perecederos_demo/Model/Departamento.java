@@ -8,6 +8,7 @@ public enum Departamento {
     LACTEOS,
     CARNES,
     EMBUTIDOS,
+    MULTIPLE,
     FARMACIA;
 
     @JsonCreator

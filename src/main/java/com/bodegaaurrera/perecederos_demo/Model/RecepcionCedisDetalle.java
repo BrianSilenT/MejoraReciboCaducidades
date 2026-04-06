@@ -35,5 +35,7 @@ public class RecepcionCedisDetalle {
     private LocalDate fechaCaducidad;
 
     private Integer cantidadRpc; // opcional para frutas/verduras
+    @Enumerated(EnumType.STRING)
+    private TipoRpc tipoRpc;
 
 }
