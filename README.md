@@ -1,5 +1,5 @@
 
-
+https://deepwiki.com/BrianSilenT/MejoraReciboCaducidades/1.1-getting-started-and-local-development
 # 📘 Backend Perecederos – API REST
 
 Este backend expone endpoints para gestionar productos, órdenes de compra, recepciones, inventario, RPC y dashboard.  
