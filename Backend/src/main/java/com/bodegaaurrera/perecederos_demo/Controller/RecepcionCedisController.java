@@ -63,17 +63,6 @@
             ));
         }
 
-        //@GetMapping("/camion/{numeroCamion}/departamento/frutas-verduras")
-        //public ApiResponse<RecepcionCedisResponseDTO> obtenerFrutasYVerduras(@PathVariable String numeroCamion) {
-        //    RecepcionCedisResponseDTO dto = recepcionCedisService.obtenerFrutasYVerduras(numeroCamion);
-        //    if (dto == null) {
-        //        // Para debug: imprime que el DTO vino nulo
-        //        System.out.println("Service devolvió null");
-        //        return new ApiResponse<>(new RecepcionCedisResponseDTO());
-        //    }
-        //    return new ApiResponse<>(dto);
-        //}
-
         @PostMapping
         public ResponseEntity<RecepcionAuditoriaDTO> registrarRecepcion(@Valid @RequestBody RecepcionCedisRequestDTO request) {
             RecepcionCedis recepcion = recepcionCedisService.registrarRecepcionConDetalles(request);

@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface RecepcionCedisDetalleRepository extends JpaRepository<RecepcionCedisDetalle, Long> {
-    List<RecepcionCedisDetalle> findByRecepcionCedis_IdRecepcionCedis(Long idRecepcionCedis);
+    List<RecepcionCedisDetalle> findByRecepcionCedis_IdRecepcion(Long idRecepcion);
 }

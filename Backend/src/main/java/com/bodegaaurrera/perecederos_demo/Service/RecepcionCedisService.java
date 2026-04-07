@@ -131,7 +131,7 @@ public class RecepcionCedisService {
 
     private RecepcionCedisDTO mapToRecepcionDTO(RecepcionCedis entity) {
         RecepcionCedisDTO dto = new RecepcionCedisDTO();
-        dto.setIdRecepcion(entity.getIdRecepcionCedis());
+        dto.setIdRecepcion(entity.getIdRecepcion());
         dto.setNumeroCamion(entity.getNumeroCamion());
         dto.setDepartamento(entity.getDepartamento() != null ? entity.getDepartamento().name() : "MULTIPLE");
         dto.setDivision(entity.getDivision() != null ? entity.getDivision().name() : null);
@@ -146,6 +146,7 @@ public class RecepcionCedisService {
         return detalles.stream().map(d -> {
             RecepcionCedisDetalleDTO dto = new RecepcionCedisDetalleDTO();
             dto.setIdProducto(d.getProducto().getIdProducto());
+            dto.setNombreProducto(d.getProducto().getNombre());
             dto.setCantidadEsperada(d.getCantidadEsperada());
             dto.setCantidadRecibida(d.getCantidadRecibida());
             dto.setLote(d.getLote());
@@ -184,7 +185,7 @@ public class RecepcionCedisService {
         RecepcionCedisResponseDTO dto = new RecepcionCedisResponseDTO();
         dto.setRecepcion(mapToRecepcionDTO(recepcion));
         dto.setDetalles(mapToDetalleDTOs(
-                recepcionCedisDetalleRepository.findByRecepcionCedis_IdRecepcionCedis(recepcion.getIdRecepcionCedis())
+                recepcionCedisDetalleRepository.findByRecepcionCedis_IdRecepcion(recepcion.getIdRecepcion())
         ));
         dto.setDiscrepancias(mapToDiscrepanciaDTOs(
                 discrepanciaRepository.findByNumeroCamion(recepcion.getNumeroCamion())
@@ -229,32 +230,6 @@ public class RecepcionCedisService {
                 ))
                 .toList();
     }
-
-    //public RecepcionCedisResponseDTO obtenerFrutasYVerduras(String numeroCamion) {
-    //    List<RecepcionCedis> recepciones = recepcionCedisRepository.findByNumeroCamionAndDepartamentoIn(
-    //            numeroCamion, List.of(Departamento.FRUTAS, Departamento.VERDURAS)
-    //    );
-//
-    //    if (recepciones == null || recepciones.isEmpty()) {
-    //        return construirRespuestaVacia(numeroCamion);
-    //    }
-//
-    //    RecepcionCedis cabecera = recepciones.get(0);
-    //    cabecera.setDepartamento(Departamento.MULTIPLE);
-//
-    //    RecepcionCedisResponseDTO dto = construirRespuesta(cabecera);
-//
-    //    recepciones.stream().skip(1).forEach(r -> {
-    //        dto.getDetalles().addAll(
-    //                mapToDetalleDTOs(
-    //                        recepcionCedisDetalleRepository.findByRecepcionCedis_IdRecepcionCedis(r.getIdRecepcionCedis())
-    //                )
-    //        );
-    //    });
-    //    System.out.println("DTO construido: " + dto.getRecepcion().getNumeroCamion());
-    //    return dto;
-    //}
-
     private RecepcionCedisResponseDTO construirRespuestaVacia(String numeroCamion) {
         RecepcionCedis cabecera = new RecepcionCedis();
         cabecera.setNumeroCamion(numeroCamion);
@@ -275,7 +250,7 @@ public class RecepcionCedisService {
 
         // Detalles simplificados
         List<DetallePlanoDTO> detalles = recepcionCedisDetalleRepository
-                .findByRecepcionCedis_IdRecepcionCedis(recepcion.getIdRecepcionCedis())
+                .findByRecepcionCedis_IdRecepcion(recepcion.getIdRecepcion())
                 .stream()
                 .map(d -> {
                     DetallePlanoDTO det = new DetallePlanoDTO();
@@ -330,7 +305,7 @@ public class RecepcionCedisService {
 
         // Recalcular totales
         int totalRecibido = recepcionCedisDetalleRepository
-                .findByRecepcionCedis_IdRecepcionCedis(idRecepcion)
+                .findByRecepcionCedis_IdRecepcion(idRecepcion)
                 .stream()
                 .mapToInt(RecepcionCedisDetalle::getCantidadRecibida)
                 .sum();
@@ -361,11 +336,11 @@ public class RecepcionCedisService {
     public RecepcionCedisResponseDTO construirRespuestaCompleta(List<RecepcionCedis> recepciones) {
         RecepcionCedisResponseDTO dto = new RecepcionCedisResponseDTO();
 
-        // 1. Usar la primera recepción como base para mantener IDs reales si es posible
-        // o seguir con la combinada pero asegurando que los datos satélites crucen bien.
+        RecepcionCedis principal = recepciones.get(0);
         RecepcionCedis cabecera = new RecepcionCedis();
-        String nCamion = recepciones.get(0).getNumeroCamion(); // Guardamos el número exacto
+        cabecera.setIdRecepcion(principal.getIdRecepcion());
 
+        String nCamion = recepciones.get(0).getNumeroCamion(); // Guardamos el número exacto
         cabecera.setNumeroCamion(nCamion);
         cabecera.setDivision(recepciones.get(0).getDivision());
         cabecera.setFechaRecepcion(recepciones.get(0).getFechaRecepcion());
@@ -386,7 +361,7 @@ public class RecepcionCedisService {
         // 2. Unir detalles de TODAS las recepciones de ese camión
         List<RecepcionCedisDetalle> todosDetalles = recepciones.stream()
                 .flatMap(r -> recepcionCedisDetalleRepository
-                        .findByRecepcionCedis_IdRecepcionCedis(r.getIdRecepcionCedis())
+                        .findByRecepcionCedis_IdRecepcion(r.getIdRecepcion())
                         .stream())
                 .collect(Collectors.toList()); // Usar collect para asegurar que es mutable
 

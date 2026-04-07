@@ -49,20 +49,25 @@ const cargarCamionCompleto = async () => {
   try {
     const res = await axios.get(`/api/recepciones/cedis/camion/${camionSeleccionado}`);
     
-    // De acuerdo a tu Postman, la respuesta llega directo en res.data
-    // No existe un segundo nivel ".data"
-    const respuestaServidor = res.data; 
+    // 🔥 CORRECCIÓN AQUÍ: Accedemos al segundo nivel de .data
+    const respuestaServidor = res.data.data; 
 
+    // Ahora respuestaServidor ya es el objeto que contiene { recepcion, detalles, etc. }
     if (respuestaServidor && respuestaServidor.recepcion) {
-      // 1. Capturamos el ID para habilitar el botón de Cerrar (PUT)
+      
       const idDeLaDb = respuestaServidor.recepcion.idRecepcion;
+      
+      // Si el id es null o undefined, lanzamos la alerta
+      if (!idDeLaDb) {
+        setMensaje("El camión existe pero la recepción no tiene ID activo ⚠️");
+        setIdActual(null);
+        return;
+      }
+
       setIdActual(idDeLaDb); 
 
-      // 2. Cargamos los productos en la tabla
-      // Usamos el helper normalizarDetalles para adaptar los nombres de los campos
+      // Cargamos los productos usando el helper
       setProductos(normalizarDetalles(respuestaServidor.detalles || []));
-
-      // 3. Cargamos las discrepancias (si existen)
       setDiscrepancias(respuestaServidor.discrepancias || []);
 
       setMensaje(`Camión ${camionSeleccionado} cargado con ID: ${idDeLaDb} ✅`);
@@ -72,11 +77,10 @@ const cargarCamionCompleto = async () => {
     }
   } catch (err) {
     console.error("Error al cargar:", err);
-    setMensaje("No se pudo cargar el camión o no existe en la base de datos ❌");
+    setMensaje("Error de conexión o servidor ❌");
     setIdActual(null);
   }
 };
-
 
   const cargarPorDepartamento = async (departamento) => {
   try {
