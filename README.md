@@ -1,7 +1,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/BrianSilenT/MejoraReciboCaducidades)
 https://deepwiki.com/BrianSilenT/MejoraReciboCaducidades
 # 📘 Backend Perecederos – API REST
-
+https://briansilent-mejorarecibocaducidades-79.mintlify.app/
 Este backend expone endpoints para gestionar productos, órdenes de compra, recepciones, inventario, RPC y dashboard.  
 La API responde en formato **JSON** y está pensada para ser consumida desde Postman o cualquier cliente HTTP.
 
