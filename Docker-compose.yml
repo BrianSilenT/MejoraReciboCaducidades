@@ -1,0 +1,31 @@
+services:
+  db:  # Asegúrate de tener el servicio de la base de datos definido aquí
+    image: postgres:15
+    container_name: perecederos-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: caducidadesdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  backend:
+    build: ./backend
+    container_name: perecederos-backend
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Esto crea el túnel a tu laptop
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/caducidadesdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none # Importante: 'none' para no borrar tus datos reales
+
+  frontend:
+    build: ./frontend-vite
+    container_name: perecederos-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

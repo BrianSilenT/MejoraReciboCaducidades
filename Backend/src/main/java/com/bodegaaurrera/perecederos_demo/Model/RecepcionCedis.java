@@ -15,7 +15,8 @@ public class RecepcionCedis {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idRecepcionCedis;
+    @Column (name = "id_recepcion_cedis")
+    private Long idRecepcion;
 
     private String numeroCamion;
     private LocalDate fechaRecepcion;

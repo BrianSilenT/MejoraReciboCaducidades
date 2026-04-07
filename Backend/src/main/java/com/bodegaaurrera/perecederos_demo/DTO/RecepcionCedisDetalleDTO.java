@@ -14,6 +14,8 @@ public class RecepcionCedisDetalleDTO {
     @NotNull(message = "El ID del producto es obligatorio")
     private Long idProducto;
 
+    private String nombreProducto;
+
     @Min(value = 0, message = "La cantidad recibida no puede ser negativa")
     private int cantidadRecibida;
 
