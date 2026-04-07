@@ -1,4 +1,4 @@
-
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/BrianSilenT/MejoraReciboCaducidades)
 https://deepwiki.com/BrianSilenT/MejoraReciboCaducidades/1.1-getting-started-and-local-development
 # 📘 Backend Perecederos – API REST
 
