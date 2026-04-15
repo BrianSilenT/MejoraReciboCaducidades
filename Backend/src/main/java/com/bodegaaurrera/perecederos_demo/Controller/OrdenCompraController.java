@@ -1,8 +1,8 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
-import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
-import com.bodegaaurrera.perecederos_demo.Model.EstadoOrden;
-import com.bodegaaurrera.perecederos_demo.Model.EstadoOrdenRequest;
+import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.Enums.EstadoOrden;
+import com.bodegaaurrera.perecederos_demo.DTO.EstadoOrdenRequest;
 import com.bodegaaurrera.perecederos_demo.Model.OrdenCompra;
 import com.bodegaaurrera.perecederos_demo.Service.OrdenCompraService;
 import org.springframework.web.bind.annotation.*;

@@ -1,8 +1,13 @@
-package com.bodegaaurrera.perecederos_demo.Model;
+package com.bodegaaurrera.perecederos_demo.DTO;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
 public class ApiResponse<T> {
     private int total;
     private String fecha;
@@ -12,17 +17,5 @@ public class ApiResponse<T> {
         this.data = data;
         this.total = (data instanceof List) ? ((List<?>) data).size() : 1;
         this.fecha = LocalDateTime.now().toString();
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public String getFecha() {
-        return fecha;
-    }
-
-    public T getData() {
-        return data;
     }
 }

@@ -1,5 +1,7 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.TipoRpc;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +22,10 @@ public class RpcControl {
 
     @NotBlank
     private String numeroCamion;
+
+    @ManyToOne
+    @JoinColumn(name = "id_recepcion_cedis")
+    private RecepcionCedis recepcionCedis;
 
     @Enumerated(EnumType.STRING)
     private Departamento departamento; // Enum: FRUTAS, VERDURAS, etc.

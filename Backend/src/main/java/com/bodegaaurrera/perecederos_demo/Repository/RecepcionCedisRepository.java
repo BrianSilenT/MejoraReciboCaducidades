@@ -1,8 +1,8 @@
 package com.bodegaaurrera.perecederos_demo.Repository;
 
 import com.bodegaaurrera.perecederos_demo.Model.RecepcionCedis;
-import com.bodegaaurrera.perecederos_demo.Model.Departamento;
-import com.bodegaaurrera.perecederos_demo.Model.Division;
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.Division;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

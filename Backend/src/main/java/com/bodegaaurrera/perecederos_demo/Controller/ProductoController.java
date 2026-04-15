@@ -1,9 +1,10 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
 
-import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.Producto;
 import com.bodegaaurrera.perecederos_demo.Service.ProductoService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ApiResponse<Producto> registrarProducto(@RequestBody Producto producto) {
+    public ApiResponse<Producto> registrarProducto(@Valid @RequestBody Producto producto) {
         Producto nuevo = productoService.registrar(producto);
         return new ApiResponse<>(nuevo);
     }

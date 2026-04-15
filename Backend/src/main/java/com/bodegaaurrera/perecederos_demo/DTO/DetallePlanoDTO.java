@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public class DetallePlanoDTO {
     private Long idDetalleCedis;
     private String producto;          // nombre del producto
-    private int cantidadRecibida;
+    private Integer cantidadRecibida;
     private String lote;
     private LocalDate fechaCaducidad;
     private int cantidadRpc;

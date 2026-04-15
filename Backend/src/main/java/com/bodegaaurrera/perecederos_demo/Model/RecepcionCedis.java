@@ -1,7 +1,9 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.Division;
+import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
@@ -39,7 +41,4 @@ public class RecepcionCedis {
     @OneToMany(mappedBy = "recepcionCedis", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecepcionCedisDetalle> detalles;
 
-    @Column(name = "cantidad_rpc")
-    @Min(value = 0, message = "La cantidad de RPC no puede ser negativa")
-    private Integer cantidadRpc; // ahora es objeto, puede ser null
 }

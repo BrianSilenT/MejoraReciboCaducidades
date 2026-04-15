@@ -1,6 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Repository;
 
-import com.bodegaaurrera.perecederos_demo.Model.EstadoRecepcion;
+import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import com.bodegaaurrera.perecederos_demo.Model.Recepcion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

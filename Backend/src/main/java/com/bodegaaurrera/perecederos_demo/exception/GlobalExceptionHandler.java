@@ -1,6 +1,6 @@
-package com.bodegaaurrera.perecederos_demo.Config;
+package com.bodegaaurrera.perecederos_demo.exception;
 
-import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

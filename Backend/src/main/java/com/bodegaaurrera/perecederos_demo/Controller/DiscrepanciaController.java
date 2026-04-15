@@ -1,6 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
-import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.DiscrepanciaRecepcion;
 import com.bodegaaurrera.perecederos_demo.Service.DiscrepanciaService;
 import org.springframework.web.bind.annotation.*;

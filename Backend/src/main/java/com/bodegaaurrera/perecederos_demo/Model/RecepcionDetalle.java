@@ -14,9 +14,17 @@ import java.time.LocalDate;
 @Table(name = "recepcion_detalle")
 public class RecepcionDetalle {
 
+    @ManyToOne
+    @JoinColumn(name = "orden_compra_detalle_id")
+    private OrdenCompraDetalle ordenCompraDetalle;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idDetalle;
+
+    @ManyToOne
+    @JoinColumn(name = "id_orden_detalle")
+    private OrdenCompraDetalle ordenDetalle;
 
     @ManyToOne
     @JoinColumn(name = "idRecepcion")
@@ -27,7 +35,7 @@ public class RecepcionDetalle {
     @JoinColumn(name = "idProducto")
     private Producto producto;
 
-    private int cantidadRecibida;
+    private Integer cantidadRecibida;
     private String lote;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

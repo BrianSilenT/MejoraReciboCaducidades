@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 public class RecepcionCedisDTO {
     private Long idRecepcion;        // identificador único
-    private String numeroCamion;     // número de camión
+    private String numeroCamion;     // número de camiones
     private String departamento;     // nombre del departamento (convertido desde Enum)
     private String division;         // nombre de la división
     private LocalDateTime fechaRegistro; // fecha/hora en que se creó la recepción

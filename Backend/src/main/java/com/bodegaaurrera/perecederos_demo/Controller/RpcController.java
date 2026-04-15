@@ -1,12 +1,12 @@
 package com.bodegaaurrera.perecederos_demo.Controller;
 
-import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
+import com.bodegaaurrera.perecederos_demo.DTO.RpcResumenDTO;
 import com.bodegaaurrera.perecederos_demo.Model.RpcControl;
 import com.bodegaaurrera.perecederos_demo.Service.RpcService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rpc")
@@ -18,19 +18,18 @@ public class RpcController {
         this.rpcService = rpcService;
     }
 
-    // DASHBOARD: Resumen de totales (KPIs)
+    // 1. Corregir el Resumen (Incompatible types)
     @GetMapping("/resumen")
-    public ApiResponse<Map<String, Object>> obtenerResumen() {
+    public ApiResponse<RpcResumenDTO> obtenerResumen() { // <-- Cambiado de Map a RpcResumenDTO
         return new ApiResponse<>(rpcService.obtenerResumen());
     }
-
     // BANDEJA 1: Lo que está en Cedis/Tienda (Enviado pero no vuelto)
     @GetMapping("/pendientes")
     public ApiResponse<List<RpcControl>> obtenerPendientes() {
         return new ApiResponse<>(rpcService.obtenerPendientes());
     }
 
-    // BANDEJA 2: Lo que ya regresó físicamente
+    // 2. Corregir los Completados (Cannot resolve method)
     @GetMapping("/completados")
     public ApiResponse<List<RpcControl>> obtenerCompletados() {
         return new ApiResponse<>(rpcService.obtenerCompletados());
