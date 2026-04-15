@@ -1,4 +1,4 @@
-package com.bodegaaurrera.perecederos_demo.Config;
+package com.bodegaaurrera.perecederos_demo.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

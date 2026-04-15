@@ -1,21 +1,19 @@
 package com.bodegaaurrera.perecederos_demo.Service;
 
-import com.bodegaaurrera.perecederos_demo.Model.EstadoOrden;
+import com.bodegaaurrera.perecederos_demo.Enums.EstadoOrden;
 import com.bodegaaurrera.perecederos_demo.Model.OrdenCompra;
 import com.bodegaaurrera.perecederos_demo.Repository.OrdenCompraRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class OrdenCompraService {
 
     private final OrdenCompraRepository ordenCompraRepository;
-
-    public OrdenCompraService(OrdenCompraRepository ordenCompraRepository) {
-        this.ordenCompraRepository = ordenCompraRepository;
-    }
 
     // ✅ Listar todas las órdenes
     public List<OrdenCompra> listarOrdenes() {

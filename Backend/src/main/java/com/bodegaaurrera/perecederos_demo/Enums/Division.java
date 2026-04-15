@@ -1,4 +1,4 @@
-package com.bodegaaurrera.perecederos_demo.Model;
+package com.bodegaaurrera.perecederos_demo.Enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

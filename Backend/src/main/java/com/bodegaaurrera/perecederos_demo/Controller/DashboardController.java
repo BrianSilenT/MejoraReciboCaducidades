@@ -48,7 +48,7 @@ public class DashboardController {
         long recepcionesProveedor = recepcionProveedorRepo.count();
 
         // 🔹 RPC
-        long rpcPendientes = rpcRepo.countByPendienteRetornoTrue();
+        long rpcPendientes = rpcRepo.countByPendienteRetorno(true);
 
         // 🔹 Construir respuesta
         resumen.put("caducados", caducados);

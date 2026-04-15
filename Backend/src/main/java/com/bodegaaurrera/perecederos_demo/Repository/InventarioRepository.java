@@ -1,21 +1,26 @@
 package com.bodegaaurrera.perecederos_demo.Repository;
 
-import com.bodegaaurrera.perecederos_demo.Model.Departamento;
-import com.bodegaaurrera.perecederos_demo.Model.Division;
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.Division;
 import com.bodegaaurrera.perecederos_demo.Model.Inventario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface InventarioRepository extends JpaRepository<Inventario, Long> {
     List<Inventario> findByFechaCaducidadBefore(LocalDate limite);
-    List<Inventario> findByCodigoBarras(String codigoBarras);
+
+    @Query("SELECT i FROM Inventario i JOIN FETCH i.producto WHERE i.producto.codigoBarras = :codigo")
+    List<Inventario> findDetalleCompleto(String codigo);
+
     List<Inventario> findByDivision(Division division);
+
     List<Inventario> findByDepartamento(Departamento departamento);
-    Optional<Inventario> findByCodigoBarrasAndLote(String codigoBarras, String lote);
+
+
+    List<Inventario> findByFechaCaducidadBetween(LocalDate inicio, LocalDate fin);
 
     // 🔹 Nuevo: contar caducados
     long countByFechaCaducidadBefore(LocalDate fecha);
@@ -26,4 +31,5 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
     // 🔹 Nuevo: sumar cantidades de inventario
     @Query("SELECT COALESCE(SUM(i.cantidad),0) FROM Inventario i")
     long sumCantidad();
+
 }

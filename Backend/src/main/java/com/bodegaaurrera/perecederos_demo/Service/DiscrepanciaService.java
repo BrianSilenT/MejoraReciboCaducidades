@@ -2,17 +2,17 @@ package com.bodegaaurrera.perecederos_demo.Service;
 
 import com.bodegaaurrera.perecederos_demo.Model.DiscrepanciaRecepcion;
 import com.bodegaaurrera.perecederos_demo.Repository.DiscrepanciaRecepcionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+@RequiredArgsConstructor
 @Service
 public class DiscrepanciaService {
 
     private final DiscrepanciaRecepcionRepository discrepanciaRepository;
 
-    public DiscrepanciaService(DiscrepanciaRecepcionRepository discrepanciaRepository) {
-        this.discrepanciaRepository = discrepanciaRepository;
-    }
 
     // ✅ Registrar discrepancia
     public DiscrepanciaRecepcion registrarDiscrepancia(DiscrepanciaRecepcion discrepancia) {

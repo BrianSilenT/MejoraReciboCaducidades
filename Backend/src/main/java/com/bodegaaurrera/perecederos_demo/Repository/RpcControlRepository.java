@@ -1,29 +1,27 @@
 package com.bodegaaurrera.perecederos_demo.Repository;
 
-import com.bodegaaurrera.perecederos_demo.Model.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
 import com.bodegaaurrera.perecederos_demo.Model.RpcControl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
 import java.util.List;
 
 public interface RpcControlRepository extends JpaRepository<RpcControl, Long> {
+
     List<RpcControl> findByDepartamento(Departamento departamento);
+
     List<RpcControl> findByNumeroCamion(String numeroCamion);
 
-    // ✅ Contar pendientes
-    long countByPendienteRetornoTrue();
+    List<RpcControl> findByPendienteRetorno(boolean pendiente);
 
-    // ✅ Contar completados
-    long countByPendienteRetornoFalse();
+    // ✅ Usamos la versión genérica para que el Service pase true/false
+    long countByPendienteRetorno(boolean b);
 
-    // ✅ Sumar cantidad entregada
+    // ✅ COALESCE es vital para evitar NullPointerException si la tabla está vacía
     @Query("SELECT COALESCE(SUM(r.cantidadEntregada), 0) FROM RpcControl r")
-    Long sumCantidadEntregada();
+    long sumCantidadEntregada();
 
-    // ✅ Sumar cantidad retornada
     @Query("SELECT COALESCE(SUM(r.cantidadRetornada), 0) FROM RpcControl r")
-    Long sumCantidadRetornada();
+    long sumCantidadRetornada();
 
-    Long countByPendienteRetorno(boolean b);
 }

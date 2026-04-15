@@ -8,4 +8,5 @@ import java.util.List;
 public interface DiscrepanciaRecepcionRepository extends JpaRepository<DiscrepanciaRecepcion, Long> {
     List<DiscrepanciaRecepcion> findByNumeroCamion(String numeroCamion);
     List<DiscrepanciaRecepcion> findByDepartamento(String departamento);
+
 }

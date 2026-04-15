@@ -1,5 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
+import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -15,10 +16,14 @@ import java.util.List;
 @Table(name = "recepcion")
 public class Recepcion {
 
+    @OneToMany(mappedBy = "recepcion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecepcionDetalle> detalles;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRecepcion;
 
+    @Column(nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaRecepcion;
 
@@ -28,6 +33,8 @@ public class Recepcion {
     @ManyToOne
     @JoinColumn(name = "idOrden")
     private OrdenCompra ordenCompra;
+
+    private String usuario;
 
     // 🔹 Relación con los productos recibidos
     @OneToMany(mappedBy = "recepcion", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -3,7 +3,7 @@
     import com.bodegaaurrera.perecederos_demo.DTO.RecepcionAuditoriaDTO;
     import com.bodegaaurrera.perecederos_demo.DTO.RecepcionCedisRequestDTO;
     import com.bodegaaurrera.perecederos_demo.DTO.RecepcionCedisResponseDTO;
-    import com.bodegaaurrera.perecederos_demo.Model.ApiResponse;
+    import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
     import com.bodegaaurrera.perecederos_demo.Model.RecepcionCedis;
     import com.bodegaaurrera.perecederos_demo.Service.RecepcionCedisService;
     import jakarta.validation.Valid;
@@ -20,7 +20,6 @@
     @RequestMapping("/api/recepciones/cedis")
     public class RecepcionCedisController {
 
-        @Autowired
         private final RecepcionCedisService recepcionCedisService;
 
         public RecepcionCedisController(RecepcionCedisService recepcionCedisService) {

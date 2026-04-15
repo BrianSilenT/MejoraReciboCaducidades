@@ -1,6 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.DTO;
 
-import com.bodegaaurrera.perecederos_demo.Model.TipoRpc;
+import com.bodegaaurrera.perecederos_demo.Enums.TipoRpc;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -17,7 +17,7 @@ public class RecepcionCedisDetalleDTO {
     private String nombreProducto;
 
     @Min(value = 0, message = "La cantidad recibida no puede ser negativa")
-    private int cantidadRecibida;
+    private Integer cantidadRecibida;
 
     @Min(value = 1, message = "La cantidad esperada debe ser mayor a 0")
     private int cantidadEsperada; // 🔹 nuevo campo

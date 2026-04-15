@@ -1,5 +1,6 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
+import com.bodegaaurrera.perecederos_demo.Enums.TipoRpc;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -28,7 +29,7 @@ public class RecepcionCedisDetalle {
     private Producto producto;
 
     private int cantidadEsperada;   // 🔹 lo que CEDIS mandó
-    private int cantidadRecibida;   // 🔹 lo que auditor captura
+    private Integer cantidadRecibida;   // 🔹 lo que auditor captura
     private String lote;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

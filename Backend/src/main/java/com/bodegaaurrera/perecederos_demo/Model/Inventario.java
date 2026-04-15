@@ -1,5 +1,8 @@
 package com.bodegaaurrera.perecederos_demo.Model;
 
+import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
+import com.bodegaaurrera.perecederos_demo.Enums.Division;
+import com.bodegaaurrera.perecederos_demo.Enums.Ubicacion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,8 +20,9 @@ public class Inventario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idInventario;
 
-    private String codigoBarras;
-    private String descripcion;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_id", nullable = false)
+    private Producto producto;
     private int cantidad;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -28,6 +32,9 @@ public class Inventario {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaLlegada;   // se asigna automáticamente al registrar
+
+    @Enumerated(EnumType.STRING)
+    private Ubicacion ubicacion;
 
     @Enumerated(EnumType.STRING)
     private Division division;

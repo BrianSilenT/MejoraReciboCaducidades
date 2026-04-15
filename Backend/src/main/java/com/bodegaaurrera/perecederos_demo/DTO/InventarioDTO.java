@@ -1,19 +1,17 @@
-package com.bodegaaurrera.perecederos_demo.Model;
-
+package com.bodegaaurrera.perecederos_demo.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
+
 @Getter
 @Setter
-public class AlertaInventario {
+public class InventarioDTO {
     private String codigoBarras;
     private String descripcion;
     private int cantidad;
+    private String lote;
     private LocalDate fechaCaducidad;
-    private long diasRestantes;
-    private String alerta;
-    // getters y setters
 }
