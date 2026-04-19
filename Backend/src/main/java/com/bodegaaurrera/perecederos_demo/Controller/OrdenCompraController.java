@@ -5,19 +5,18 @@ import com.bodegaaurrera.perecederos_demo.Enums.EstadoOrden;
 import com.bodegaaurrera.perecederos_demo.DTO.EstadoOrdenRequest;
 import com.bodegaaurrera.perecederos_demo.Model.OrdenCompra;
 import com.bodegaaurrera.perecederos_demo.Service.OrdenCompraService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/ordenes-compra")
 public class OrdenCompraController {
 
     private final OrdenCompraService ordenCompraService;
 
-    public OrdenCompraController(OrdenCompraService ordenCompraService) {
-        this.ordenCompraService = ordenCompraService;
-    }
 
     // ✅ Listar todas las órdenes
     @GetMapping("/list")

@@ -2,7 +2,11 @@ package com.bodegaaurrera.perecederos_demo.Model;
 
 import com.bodegaaurrera.perecederos_demo.Enums.Role;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 public class Usuario {
     @Id

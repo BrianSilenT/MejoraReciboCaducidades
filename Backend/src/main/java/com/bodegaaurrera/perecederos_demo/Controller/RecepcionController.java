@@ -3,20 +3,19 @@ package com.bodegaaurrera.perecederos_demo.Controller;
 import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.Recepcion;
 import com.bodegaaurrera.perecederos_demo.Service.RecepcionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/recepcion")
 public class RecepcionController {
 
     private final RecepcionService recepcionService;
 
-    public RecepcionController(RecepcionService recepcionService) {
-        this.recepcionService = recepcionService;
-    }
 
     // ✅ Registrar recepción de proveedor
     @PostMapping

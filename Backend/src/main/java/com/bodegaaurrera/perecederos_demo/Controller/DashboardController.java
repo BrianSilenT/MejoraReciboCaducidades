@@ -4,12 +4,14 @@ import com.bodegaaurrera.perecederos_demo.Repository.InventarioRepository;
 import com.bodegaaurrera.perecederos_demo.Repository.RecepcionCedisRepository;
 import com.bodegaaurrera.perecederos_demo.Repository.RecepcionRepository;
 import com.bodegaaurrera.perecederos_demo.Repository.RpcControlRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
@@ -19,17 +21,6 @@ public class DashboardController {
     private final RecepcionRepository recepcionProveedorRepo;
     private final RpcControlRepository rpcRepo;
 
-    public DashboardController(
-            InventarioRepository inventarioRepo,
-            RecepcionCedisRepository recepcionCedisRepo,
-            RecepcionRepository recepcionProveedorRepo,
-            RpcControlRepository rpcRepo
-    ) {
-        this.inventarioRepo = inventarioRepo;
-        this.recepcionCedisRepo = recepcionCedisRepo;
-        this.recepcionProveedorRepo = recepcionProveedorRepo;
-        this.rpcRepo = rpcRepo;
-    }
 
     @GetMapping
     public Map<String, Object> getDashboard() {

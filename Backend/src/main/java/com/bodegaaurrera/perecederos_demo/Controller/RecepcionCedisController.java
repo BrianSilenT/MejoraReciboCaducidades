@@ -7,6 +7,7 @@
     import com.bodegaaurrera.perecederos_demo.Model.RecepcionCedis;
     import com.bodegaaurrera.perecederos_demo.Service.RecepcionCedisService;
     import jakarta.validation.Valid;
+    import lombok.RequiredArgsConstructor;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
@@ -16,15 +17,15 @@
     import java.util.List;
     import java.util.Map;
 
+
+    @RequiredArgsConstructor
     @RestController
     @RequestMapping("/api/recepciones/cedis")
     public class RecepcionCedisController {
 
         private final RecepcionCedisService recepcionCedisService;
 
-        public RecepcionCedisController(RecepcionCedisService recepcionCedisService) {
-            this.recepcionCedisService = recepcionCedisService;
-        }
+
 
         @GetMapping("/camion/{numeroCamion}/departamento/{departamento}")
         public ApiResponse<RecepcionCedisResponseDTO> obtenerPorDepartamento(

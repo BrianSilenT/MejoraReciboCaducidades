@@ -6,9 +6,9 @@ import com.bodegaaurrera.perecederos_demo.Model.Inventario;
 import com.bodegaaurrera.perecederos_demo.Model.MovimientoInventario;
 import com.bodegaaurrera.perecederos_demo.Repository.MovimientoInventarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -24,10 +24,18 @@ public class MovimientoInventarioService {
             Ubicacion origen,
             Ubicacion destino,
             String referencia,
-            String usuario,
             String motivo
     ) {
 
+        // 🔐 Obtener usuario desde JWT
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String usuario = (auth != null && auth.isAuthenticated()
+                && !"anonymousUser".equals(auth.getName()))
+                ? auth.getName()
+                : "SYSTEM";
+
+        // 📦 Crear movimiento
         MovimientoInventario mov = new MovimientoInventario();
 
         mov.setProducto(inv.getProducto());
@@ -37,9 +45,9 @@ public class MovimientoInventarioService {
         mov.setUbicacionOrigen(origen);
         mov.setUbicacionDestino(destino);
         mov.setReferencia(referencia);
-        mov.setUsuario(usuario);
         mov.setMotivo(motivo);
-        mov.setFecha(LocalDateTime.now());
+        mov.setUsuario(usuario);
+        mov.setFechaCaducidad(inv.getFechaCaducidad());
 
         repository.save(mov);
     }
