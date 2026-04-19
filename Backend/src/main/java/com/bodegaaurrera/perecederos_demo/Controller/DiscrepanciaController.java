@@ -3,19 +3,19 @@ package com.bodegaaurrera.perecederos_demo.Controller;
 import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.DiscrepanciaRecepcion;
 import com.bodegaaurrera.perecederos_demo.Service.DiscrepanciaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/discrepancias")
 public class DiscrepanciaController {
 
     private final DiscrepanciaService discrepanciaService;
 
-    public DiscrepanciaController(DiscrepanciaService discrepanciaService) {
-        this.discrepanciaService = discrepanciaService;
-    }
+
 
     @PostMapping
     public ApiResponse<DiscrepanciaRecepcion> registrarDiscrepancia(@RequestBody DiscrepanciaRecepcion discrepancia) {

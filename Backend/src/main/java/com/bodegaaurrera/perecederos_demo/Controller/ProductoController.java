@@ -5,18 +5,19 @@ import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.Model.Producto;
 import com.bodegaaurrera.perecederos_demo.Service.ProductoService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/producto")
 public class ProductoController {
 
     private final ProductoService productoService;
 
-    public ProductoController(ProductoService productoService) {
-        this.productoService = productoService;
-    }
+
 
     @PostMapping
     public ApiResponse<Producto> registrarProducto(@Valid @RequestBody Producto producto) {

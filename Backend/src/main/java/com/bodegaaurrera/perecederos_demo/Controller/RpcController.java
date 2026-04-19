@@ -4,19 +4,19 @@ import com.bodegaaurrera.perecederos_demo.DTO.ApiResponse;
 import com.bodegaaurrera.perecederos_demo.DTO.RpcResumenDTO;
 import com.bodegaaurrera.perecederos_demo.Model.RpcControl;
 import com.bodegaaurrera.perecederos_demo.Service.RpcService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/rpc")
 public class RpcController {
 
     private final RpcService rpcService;
 
-    public RpcController(RpcService rpcService) {
-        this.rpcService = rpcService;
-    }
+
 
     // 1. Corregir el Resumen (Incompatible types)
     @GetMapping("/resumen")

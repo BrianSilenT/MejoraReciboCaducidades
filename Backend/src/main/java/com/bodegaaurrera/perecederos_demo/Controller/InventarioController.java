@@ -5,21 +5,21 @@ import com.bodegaaurrera.perecederos_demo.DTO.AlertaInventario;
 import com.bodegaaurrera.perecederos_demo.DTO.InventarioDTO;
 import com.bodegaaurrera.perecederos_demo.DTO.InventarioDetalleDTO;
 import com.bodegaaurrera.perecederos_demo.Service.InventarioService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/inventario")
 public class InventarioController {
 
     private final InventarioService inventarioService;
 
-    public InventarioController(InventarioService inventarioService) {
-        this.inventarioService = inventarioService;
-    }
 
     @GetMapping
     public ApiResponse<List<InventarioDTO>> listarInventario() {

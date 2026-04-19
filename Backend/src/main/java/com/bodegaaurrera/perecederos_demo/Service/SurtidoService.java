@@ -137,7 +137,6 @@ public class SurtidoService {
             // 🔥 DESCONTAR EN BODEGA
             origen.setCantidad(origen.getCantidad() - loteReq.getCantidad());
 
-            // 🔥 REGISTRAR MOVIMIENTO
             movimientoService.registrarMovimiento(
                     origen,
                     loteReq.getCantidad(),
@@ -145,10 +144,8 @@ public class SurtidoService {
                     Ubicacion.BODEGA,
                     Ubicacion.PISO_VENTA,
                     request.getUpc(),
-                    "SYSTEM",
                     "Surtido a piso de venta"
             );
-
             // 🔥 BUSCAR SI YA EXISTE EN PISO_VENTA
             Optional<Inventario> destinoOpt = inventarios.stream()
                     .filter(i -> i.getLote().equals(loteReq.getLote()))
