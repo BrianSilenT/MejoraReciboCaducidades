@@ -22,7 +22,7 @@ public class AuditoriaSurtidoController {
 
     @RestController
     @RequestMapping("/api/auditoria")
-    public class AuditoriaController {
+    public static class AuditoriaController {
 
         private final AuditoriaService auditoriaService;
 
