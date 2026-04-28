@@ -1,4 +1,4 @@
-package com.bodegaaurrera.perecederos_demo.Service;
+package com.bodegaaurrera.perecederos_demo.Model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

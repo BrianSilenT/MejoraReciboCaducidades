@@ -11,7 +11,6 @@ import com.bodegaaurrera.perecederos_demo.Model.*;
 import com.bodegaaurrera.perecederos_demo.Repository.InventarioRepository;
 import com.bodegaaurrera.perecederos_demo.mapper.InventarioMapper;
 import com.bodegaaurrera.perecederos_demo.mapper.ProductoMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,33 +27,6 @@ public class InventarioService {
 
     private final InventarioRepository inventarioRepository;
 
-    private Inventario construirInventarioBase(
-            Producto producto,
-            Integer cantidad,
-            String lote,
-            LocalDate fechaCaducidad
-    ) {
-        if (producto == null) {
-            throw new IllegalStateException("Inventario sin producto");
-        }
-
-        if (cantidad == null || cantidad <= 0) {
-            throw new IllegalArgumentException("Cantidad inválida");
-        }
-
-        Inventario inv = new Inventario();
-        inv.setProducto(producto);
-        inv.setCantidad(cantidad);
-        inv.setLote(lote);
-        inv.setFechaCaducidad(fechaCaducidad);
-        inv.setFechaLlegada(LocalDate.now());
-
-        // 🔥 regla global
-        inv.setUbicacion(Ubicacion.BODEGA);
-
-        return inv;
-    }
-
     public List<InventarioDTO> listarTodo() {
         return inventarioRepository.findAll()
                 .stream()
@@ -62,28 +34,9 @@ public class InventarioService {
                 .toList();
     }
 
-    // ✅ Registrar nuevo inventario
+    // Registrar nuevo inventario
     public Inventario registrar(Inventario inventario) {
         return inventarioRepository.save(inventario);
-    }
-
-
-    public void cargarInventarioDesdeRecepcionCedis(RecepcionCedisDetalle d, RecepcionCedis recepcion) {
-
-        if (d.getCantidadRecibida() == null || d.getCantidadRecibida() <= 0) return;
-
-        Inventario inv = construirInventarioBase(
-                d.getProducto(),
-                d.getCantidadRecibida(),
-                d.getLote(),
-                d.getFechaCaducidad()
-        );
-
-        // 🔥 específico de CEDIS
-        inv.setDivision(recepcion.getDivision());
-        inv.setDepartamento(recepcion.getDepartamento());
-
-        registrar(inv);
     }
 
     public List<InventarioDTO> listarCaducados() {
@@ -118,31 +71,12 @@ public class InventarioService {
                 .toList();
     }
 
-    // ✅ Generar alertas automáticas de caducidad (REFACTORINGS)
+    // Generar alertas automáticas de caducidad (REFACTORINGS)
     public List<AlertaInventario> generarAlertasCaducidad() {
         return inventarioRepository.findAll()
                 .stream()
                 .map(InventarioMapper::toAlertaDTO)
                 .toList();
-    }
-
-    @Transactional
-    public void cargarInventarioDesdeRecepcion(RecepcionDetalle detalle) {
-
-        if (detalle.getCantidadRecibida() == null || detalle.getCantidadRecibida() <= 0) return;
-
-        Inventario inv = construirInventarioBase(
-                detalle.getProducto(),
-                detalle.getCantidadRecibida(),
-                detalle.getLote(),
-                detalle.getFechaCaducidad()
-        );
-
-        // 🔥 específico de proveedor directo
-        inv.setDepartamento(detalle.getProducto().getDepartamento());
-        inv.setDivision(detalle.getProducto().getDivision());
-
-        registrar(inv);
     }
 
     public InventarioDetalleDTO obtenerDetallePorUpc(String upc) {

@@ -3,6 +3,8 @@ package com.bodegaaurrera.perecederos_demo.Service;
 import com.bodegaaurrera.perecederos_demo.DTO.*;
 import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
 import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
+import com.bodegaaurrera.perecederos_demo.Enums.TipoMovimiento;
+import com.bodegaaurrera.perecederos_demo.Enums.Ubicacion;
 import com.bodegaaurrera.perecederos_demo.Model.*;
 import com.bodegaaurrera.perecederos_demo.Repository.*;
 import com.bodegaaurrera.perecederos_demo.mapper.RecepcionMapper;
@@ -22,10 +24,10 @@ public class RecepcionCedisService {
     private final RecepcionCedisRepository recepcionCedisRepository;
     private final RecepcionCedisDetalleRepository recepcionCedisDetalleRepository;
     private final DiscrepanciaRecepcionRepository discrepanciaRepository;
-    private final InventarioService inventarioService;
     private final RpcControlRepository rpcControlRepository;
     private final ProductoRepository productoRepository;
-    private final RecepcionMapper recepcionMapper; // ✅ Inyectado
+    private final RecepcionMapper recepcionMapper;
+    private final MovimientoInventarioService movimientoService;
 
 
     private boolean aplicaRpc(RecepcionCedis recepcion, RecepcionCedisDetalle d) {
@@ -110,7 +112,16 @@ public class RecepcionCedisService {
 
             // 🔥 INVENTARIO (solo si no estaba cerrada)
             if (d.getCantidadRecibida() > 0) {
-                inventarioService.cargarInventarioDesdeRecepcionCedis(d, recepcion);
+                movimientoService.ejecutarMovimiento(
+                        d.getProducto().getCodigoBarras(),
+                        d.getLote(),
+                        d.getCantidadRecibida(),
+                        TipoMovimiento.RECEPCION,
+                        null,
+                        Ubicacion.BODEGA,
+                        recepcion.getNumeroCamion(),
+                        "Recepción CEDIS"
+                );
             }
 
             // 🔥 DISCREPANCIA (evitar duplicados)

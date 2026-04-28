@@ -1,6 +1,7 @@
 package com.bodegaaurrera.perecederos_demo.Service;
 
 import com.bodegaaurrera.perecederos_demo.Enums.TipoMovimiento;
+import com.bodegaaurrera.perecederos_demo.Model.AuditoriaSurtido;
 import com.bodegaaurrera.perecederos_demo.Model.MovimientoInventario;
 import com.bodegaaurrera.perecederos_demo.Model.SugerenciaSurtido;
 import com.bodegaaurrera.perecederos_demo.Repository.AuditoriaSurtidoRepository;

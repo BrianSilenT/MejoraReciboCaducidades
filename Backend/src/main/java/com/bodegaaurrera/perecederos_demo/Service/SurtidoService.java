@@ -25,6 +25,7 @@ public class SurtidoService {
     private final AlertaService alertaService;
     private final MovimientoInventarioService movimientoService;
     private final SugerenciaSurtidoService sugerenciaService;
+    private final ProductoAliasService aliasService;
 
 
     public SugerenciaSurtidoDTO sugerirSurtido(String upc, int cantidadSolicitada) {
@@ -113,8 +114,10 @@ public class SurtidoService {
     @Transactional
     public void ejecutarSurtido(MovimientoInventarioDTO request) {
 
+        String upcNormalizado = aliasService.resolverUpcInventario(request.getUpc());
+
         List<Inventario> inventarios =
-                inventarioRepository.findDetalleCompleto(request.getUpc());
+                inventarioRepository.findDetalleCompleto(upcNormalizado);
 
         if (inventarios.isEmpty()) {
             throw new IllegalArgumentException("Producto no encontrado");
@@ -134,39 +137,17 @@ public class SurtidoService {
                 throw new IllegalArgumentException("Stock insuficiente en lote: " + loteReq.getLote());
             }
 
-            // 🔥 DESCONTAR EN BODEGA
-            origen.setCantidad(origen.getCantidad() - loteReq.getCantidad());
 
-            movimientoService.registrarMovimiento(
-                    origen,
+            movimientoService.ejecutarMovimiento(
+                    upcNormalizado,
+                    loteReq.getLote(),
                     loteReq.getCantidad(),
                     TipoMovimiento.SURTIDO,
                     Ubicacion.BODEGA,
                     Ubicacion.PISO_VENTA,
                     request.getUpc(),
-                    "Surtido a piso de venta"
+                    "Surtido a piso"
             );
-            // 🔥 BUSCAR SI YA EXISTE EN PISO_VENTA
-            Optional<Inventario> destinoOpt = inventarios.stream()
-                    .filter(i -> i.getLote().equals(loteReq.getLote()))
-                    .filter(i -> i.getUbicacion() == Ubicacion.PISO_VENTA)
-                    .findFirst();
-
-            if (destinoOpt.isPresent()) {
-
-                Inventario destino = destinoOpt.get();
-                destino.setCantidad(destino.getCantidad() + loteReq.getCantidad());
-
-                inventarioRepository.save(destino);
-
-            } else {
-
-                Inventario nuevo = crearInventarioPisoVenta(loteReq, origen);
-                inventarioRepository.save(nuevo);
-            }
-
-            // 🔥 guardar origen actualizado
-            inventarioRepository.save(origen);
         }
     }
 

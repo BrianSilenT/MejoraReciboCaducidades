@@ -2,6 +2,8 @@ package com.bodegaaurrera.perecederos_demo.Service;
 
 import com.bodegaaurrera.perecederos_demo.Enums.EstadoOrden;
 import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
+import com.bodegaaurrera.perecederos_demo.Enums.TipoMovimiento;
+import com.bodegaaurrera.perecederos_demo.Enums.Ubicacion;
 import com.bodegaaurrera.perecederos_demo.Model.*;
 import com.bodegaaurrera.perecederos_demo.Repository.OrdenCompraRepository;
 import com.bodegaaurrera.perecederos_demo.Repository.RecepcionRepository;
@@ -19,7 +21,7 @@ public class RecepcionService {
 
     private final RecepcionRepository recepcionRepository;
     private final OrdenCompraRepository ordenCompraRepository;
-    private final InventarioService inventarioService;
+    private final MovimientoInventarioService movimientoService;
 
     // ============================
     // REGISTRAR (NO impacta inventario)
@@ -66,7 +68,16 @@ public class RecepcionService {
             validarCantidad(detalle, ocDetalle);
 
             // 🔥 Actualizar inventario
-            inventarioService.cargarInventarioDesdeRecepcion(detalle);
+            movimientoService.ejecutarMovimiento(
+                    detalle.getProducto().getCodigoBarras(),
+                    detalle.getLote(),
+                    detalle.getCantidadRecibida(),
+                    TipoMovimiento.RECEPCION,
+                    null,
+                    Ubicacion.BODEGA,
+                    "OC-" + orden.getIdOrden(),
+                    "Entrada proveedor"
+            );
 
             // 🔥 Actualizar cantidad recibida en OC
             ocDetalle.setCantidadRecibida(
