@@ -2,12 +2,14 @@ package com.bodegaaurrera.perecederos_demo.Repository;
 
 import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
 import com.bodegaaurrera.perecederos_demo.Enums.Division;
+import com.bodegaaurrera.perecederos_demo.Enums.Ubicacion;
 import com.bodegaaurrera.perecederos_demo.Model.Inventario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface InventarioRepository extends JpaRepository<Inventario, Long> {
     List<Inventario> findByFechaCaducidadBefore(LocalDate limite);
@@ -21,6 +23,12 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
 
 
     List<Inventario> findByFechaCaducidadBetween(LocalDate inicio, LocalDate fin);
+
+    Optional<Inventario> findByProductoCodigoBarrasAndLoteAndUbicacion(
+            String codigoBarras,
+            String lote,
+            Ubicacion ubicacion
+    );
 
     // 🔹 Nuevo: contar caducados
     long countByFechaCaducidadBefore(LocalDate fecha);
