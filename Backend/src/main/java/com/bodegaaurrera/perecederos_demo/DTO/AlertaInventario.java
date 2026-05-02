@@ -5,6 +5,7 @@ import com.bodegaaurrera.perecederos_demo.Enums.TipoAlerta;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -14,7 +15,7 @@ public class AlertaInventario {
     private String codigoBarras;
     private String descripcion;
 
-    private int cantidad;
+    private BigDecimal cantidad;
     private LocalDate fechaCaducidad;
     private String lote;
 

@@ -1,10 +1,7 @@
 package com.bodegaaurrera.perecederos_demo.Service;
 
 import com.bodegaaurrera.perecederos_demo.DTO.*;
-import com.bodegaaurrera.perecederos_demo.Enums.Departamento;
-import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
-import com.bodegaaurrera.perecederos_demo.Enums.TipoMovimiento;
-import com.bodegaaurrera.perecederos_demo.Enums.Ubicacion;
+import com.bodegaaurrera.perecederos_demo.Enums.*;
 import com.bodegaaurrera.perecederos_demo.Model.*;
 import com.bodegaaurrera.perecederos_demo.Repository.*;
 import com.bodegaaurrera.perecederos_demo.mapper.RecepcionMapper;
@@ -12,39 +9,36 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class RecepcionCedisService {
 
     private final RpcService rpcService;
     private final RecepcionCedisRepository recepcionCedisRepository;
-    private final RecepcionCedisDetalleRepository recepcionCedisDetalleRepository;
+    private final RecepcionCedisDetalleRepository detalleRepository;
     private final DiscrepanciaRecepcionRepository discrepanciaRepository;
     private final RpcControlRepository rpcControlRepository;
     private final ProductoRepository productoRepository;
     private final RecepcionMapper recepcionMapper;
     private final MovimientoInventarioService movimientoService;
 
-
-    private boolean aplicaRpc(RecepcionCedis recepcion, RecepcionCedisDetalle d) {
-        return (recepcion.getDepartamento() == Departamento.FRUTAS
-                || recepcion.getDepartamento() == Departamento.VERDURAS)
-                && d.getCantidadRpc() != null
-                && d.getCantidadRpc() > 0;
-    }
-
+    // =========================
+    // REGISTRO
+    // =========================
     @Transactional
     public RecepcionCedis registrarRecepcionConDetalles(RecepcionCedisRequestDTO request) {
 
-        int totalRecibido = request.getDetalles().stream()
-                .mapToInt(RecepcionCedisDetalleDTO::getCantidadRecibida)
-                .sum();
+        BigDecimal totalRecibido = request.getDetalles().stream()
+                .map(RecepcionCedisDetalleDTO::getCantidadRecibida)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (totalRecibido > request.getTotalEsperado()) {
+        if (totalRecibido.compareTo(request.getTotalEsperado()) > 0) {
             throw new IllegalArgumentException("El total recibido no puede ser mayor al esperado");
         }
 
@@ -59,6 +53,7 @@ public class RecepcionCedisService {
             detalle.setRecepcionCedis(saved);
             detalle.setProducto(productoRepository.findById(d.getIdProducto())
                     .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado")));
+
             detalle.setCantidadEsperada(d.getCantidadEsperada());
             detalle.setCantidadRecibida(d.getCantidadRecibida());
             detalle.setLote(d.getLote());
@@ -66,52 +61,44 @@ public class RecepcionCedisService {
             detalle.setCantidadRpc(d.getCantidadRpc());
             detalle.setTipoRpc(d.getTipoRpc());
 
-            recepcionCedisDetalleRepository.save(detalle);
+            detalleRepository.save(detalle);
         }
 
         return saved;
     }
 
+    // =========================
+    // CIERRE (IMPACTA INVENTARIO)
+    // =========================
     @Transactional
     public RecepcionAuditoriaDTO cerrarRecepcion(Long idRecepcion) {
 
         RecepcionCedis recepcion = recepcionCedisRepository.findById(idRecepcion)
                 .orElseThrow(() -> new IllegalArgumentException("Recepción no encontrada"));
 
-        // 🔒 BLOQUEO 1: evitar doble cierre
         if (recepcion.getEstado() == EstadoRecepcion.CERRADA) {
-            throw new IllegalStateException("La recepción ya fue cerrada previamente");
-        }
-
-        if (recepcion.getEstado() == EstadoRecepcion.RECHAZADA) {
-            throw new IllegalStateException("No se puede cerrar una recepción rechazada");
+            throw new IllegalStateException("Ya fue cerrada");
         }
 
         List<RecepcionCedisDetalle> detalles =
-                recepcionCedisDetalleRepository.findByRecepcionCedis_IdRecepcion(idRecepcion);
+                detalleRepository.findByRecepcionCedis_IdRecepcion(idRecepcion);
 
-        // 🔒 BLOQUEO 2: evitar cierre sin datos
         if (detalles.isEmpty()) {
-            throw new IllegalArgumentException("No hay detalles para cerrar la recepción");
+            throw new IllegalArgumentException("Sin detalles");
         }
 
-        int totalRecibido = 0;
+        BigDecimal totalRecibido = BigDecimal.ZERO;
 
         for (RecepcionCedisDetalle d : detalles) {
 
-            // 🔒 VALIDACIONES
-            if (d.getCantidadRecibida() < 0) {
-                throw new IllegalArgumentException("Cantidad inválida en producto " + d.getProducto().getIdProducto());
+            if (d.getCantidadRecibida().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Cantidad inválida");
             }
 
-            if (d.getCantidadEsperada() <= 0) {
-                throw new IllegalArgumentException("Cantidad esperada inválida");
-            }
+            totalRecibido = totalRecibido.add(d.getCantidadRecibida());
 
-            totalRecibido += d.getCantidadRecibida();
-
-            // 🔥 INVENTARIO (solo si no estaba cerrada)
-            if (d.getCantidadRecibida() > 0) {
+            // 🔥 INVENTARIO
+            if (d.getCantidadRecibida().compareTo(BigDecimal.ZERO) > 0) {
                 movimientoService.ejecutarMovimiento(
                         d.getProducto().getCodigoBarras(),
                         d.getLote(),
@@ -124,47 +111,41 @@ public class RecepcionCedisService {
                 );
             }
 
-            // 🔥 DISCREPANCIA (evitar duplicados)
-            boolean yaExisteDiscrepancia = discrepanciaRepository
-                    .findByNumeroCamion(recepcion.getNumeroCamion())
-                    .stream()
-                    .anyMatch(x ->
-                            x.getTotalEsperado() == d.getCantidadEsperada() &&
-                                    x.getTotalRecibido() == d.getCantidadRecibida()
-                    );
-
-            if (d.getCantidadRecibida() < d.getCantidadEsperada() && !yaExisteDiscrepancia) {
+            // 🔥 DISCREPANCIA
+            if (d.getCantidadRecibida().compareTo(d.getCantidadEsperada()) < 0) {
                 registrarDiscrepancia(recepcion, d);
             }
 
-            // 🔥 RPC (evitar duplicados)
-            boolean yaExisteRpc = rpcControlRepository
-                    .findByNumeroCamion(recepcion.getNumeroCamion())
-                    .stream()
-                    .anyMatch(r ->
-                            r.getTipoRpc() == d.getTipoRpc()
-                    );
-
-            if (aplicaRpc(recepcion, d) && !yaExisteRpc) {
+            // 🔥 RPC
+            if (aplicaRpc(recepcion, d)) {
                 rpcService.registrarDesdeRecepcionCedis(recepcion, d);
             }
         }
 
-        // 🔥 TOTALES
         recepcion.setTotalRecibido(totalRecibido);
 
-        if (recepcion.getTotalEsperado() == 0) {
-            recepcion.setPorcentajeAuditado((double) 0);
+        if (recepcion.getTotalEsperado().compareTo(BigDecimal.ZERO) == 0) {
+
+            recepcion.setPorcentajeAuditado(0.0);
+
         } else {
-            recepcion.setPorcentajeAuditado((totalRecibido * 100.0) / recepcion.getTotalEsperado());
+
+            recepcion.setPorcentajeAuditado(
+                    totalRecibido
+                            .multiply(BigDecimal.valueOf(100))
+                            .divide(recepcion.getTotalEsperado(), 2, RoundingMode.HALF_UP)
+                            .doubleValue()
+            );
         }
 
-        recepcion.setCompleta(totalRecibido == recepcion.getTotalEsperado());
+        recepcion.setCompleta(
+                totalRecibido.compareTo(recepcion.getTotalEsperado()) == 0
+        );
 
-        // 🔥 ESTADO INTELIGENTE
-        if (totalRecibido == 0) {
+        // 🔥 ESTADO
+        if (totalRecibido.compareTo(BigDecimal.ZERO) == 0) {
             recepcion.setEstado(EstadoRecepcion.RECHAZADA);
-        } else if (totalRecibido < recepcion.getTotalEsperado()) {
+        } else if (totalRecibido.compareTo(recepcion.getTotalEsperado()) < 0) {
             recepcion.setEstado(EstadoRecepcion.PARCIAL);
         } else {
             recepcion.setEstado(EstadoRecepcion.CERRADA);
@@ -174,68 +155,69 @@ public class RecepcionCedisService {
 
         return construirRespuestaPlano(recepcion);
     }
+
+    // =========================
+    // RESPUESTA AUDITORIA
+    // =========================
     public RecepcionAuditoriaDTO construirRespuestaPlano(RecepcionCedis recepcion) {
+
         RecepcionAuditoriaDTO dto = new RecepcionAuditoriaDTO();
+
         dto.setRecepcion(recepcionMapper.toRecepcionDTO(recepcion));
 
-        dto.setDetalles(recepcionCedisDetalleRepository
-                .findByRecepcionCedis_IdRecepcion(recepcion.getIdRecepcion())
-                .stream()
-                .map(recepcionMapper::toDetallePlanoDTO) // Asumiendo que agregaste este al mapper
-                .toList());
+        dto.setDetalles(
+                detalleRepository.findByRecepcionCedis_IdRecepcion(recepcion.getIdRecepcion())
+                        .stream()
+                        .map(recepcionMapper::toDetallePlanoDTO)
+                        .toList()
+        );
 
-        dto.setDiscrepancias(recepcionMapper.toDiscrepanciaDTOs(
-                discrepanciaRepository.findByNumeroCamion(recepcion.getNumeroCamion())));
+        dto.setDiscrepancias(
+                recepcionMapper.toDiscrepanciaDTOs(
+                        discrepanciaRepository.findByNumeroCamion(recepcion.getNumeroCamion())
+                )
+        );
 
-        dto.setRpc(recepcionMapper.toRpcDTOs(
-                rpcControlRepository.findByNumeroCamion(recepcion.getNumeroCamion())));
+        dto.setRpc(
+                recepcionMapper.toRpcDTOs(
+                        rpcControlRepository.findByNumeroCamion(recepcion.getNumeroCamion())
+                )
+        );
 
         return dto;
     }
 
-    // --- Métodos de apoyo privados para mantener el Service limpio ---
+    // =========================
+    // CONTROLLER SUPPORT
+    // =========================
 
-    private void validarDetalle(RecepcionCedisDetalleDTO d, LocalDate fechaRecepcion) {
-        if (d.getCantidadRecibida() > d.getCantidadEsperada())
-            throw new IllegalArgumentException("Exceso en producto " + d.getIdProducto());
-        if (d.getLote() == null || d.getLote().isBlank())
-            throw new IllegalArgumentException("Lote obligatorio");
-        if (d.getFechaCaducidad() == null || d.getFechaCaducidad().isBefore(fechaRecepcion))
-            throw new IllegalArgumentException("Fecha caducidad inválida");
+    public List<RecepcionCedis> obtenerPorCamion(String numeroCamion) {
+        return recepcionCedisRepository.findByNumeroCamion(numeroCamion);
     }
 
-    private void registrarDiscrepancia(RecepcionCedis recepcion, RecepcionCedisDetalle d) {
+    public RecepcionCedisResponseDTO obtenerPorCamionYDepartamento(String numeroCamion, String departamento) {
 
-        DiscrepanciaRecepcion disc = new DiscrepanciaRecepcion();
-        disc.setNumeroCamion(recepcion.getNumeroCamion());
-        disc.setDepartamento(recepcion.getDepartamento().name());
-        disc.setTotalEsperado(d.getCantidadEsperada());
-        disc.setTotalRecibido(d.getCantidadRecibida());
-        disc.setTotalFaltante(d.getCantidadEsperada() - d.getCantidadRecibida());
-        disc.setFechaRegistro(LocalDate.now());
+        Departamento depto = Departamento.valueOf(departamento.toUpperCase());
 
-        discrepanciaRepository.save(disc);
+        List<RecepcionCedis> lista =
+                recepcionCedisRepository.findByNumeroCamionAndDepartamento(numeroCamion, depto);
+
+        if (lista.isEmpty()) {
+            throw new IllegalArgumentException("Sin registros");
+        }
+
+        return construirRespuestaCompleta(lista);
     }
 
-    public List<Map<String, Object>> listarCamiones() {
-        return recepcionCedisRepository.findAll().stream()
-                .map(r -> Map.<String, Object>of(
-                        "numeroCamion", r.getNumeroCamion(),
-                        "departamento", r.getDepartamento(),
-                        "estado", r.getEstado()
-                )).toList();
-    }
     public RecepcionCedisResponseDTO construirRespuestaCompleta(List<RecepcionCedis> recepciones) {
-
-        RecepcionCedisResponseDTO dto = new RecepcionCedisResponseDTO();
 
         RecepcionCedis principal = recepciones.get(0);
 
+        RecepcionCedisResponseDTO dto = new RecepcionCedisResponseDTO();
         dto.setRecepcion(recepcionMapper.toRecepcionDTO(principal));
 
-        // 🔹 Unir todos los detalles de todas las recepciones del camión
         List<RecepcionCedisDetalle> detalles = recepciones.stream()
-                .flatMap(r -> recepcionCedisDetalleRepository
+                .flatMap(r -> detalleRepository
                         .findByRecepcionCedis_IdRecepcion(r.getIdRecepcion())
                         .stream())
                 .toList();
@@ -257,21 +239,55 @@ public class RecepcionCedisService {
         return dto;
     }
 
-    public List<RecepcionCedis> obtenerPorCamion(String numeroCamion) {
-        return recepcionCedisRepository.findByNumeroCamion(numeroCamion);
+    public List<Map<String, Object>> listarCamiones() {
+        return recepcionCedisRepository.findAll().stream()
+                .map(r -> Map.<String, Object>of(
+                        "numeroCamion", r.getNumeroCamion(),
+                        "departamento", r.getDepartamento(),
+                        "estado", r.getEstado()
+                ))
+                .toList();
     }
-    public RecepcionCedisResponseDTO obtenerPorCamionYDepartamento(String numeroCamion, String departamento) {
 
-        Departamento depto = Departamento.valueOf(departamento.toUpperCase());
+    // =========================
+    // HELPERS
+    // =========================
 
-        List<RecepcionCedis> lista = recepcionCedisRepository
-                .findByNumeroCamionAndDepartamento(numeroCamion, depto);
+    private void validarDetalle(RecepcionCedisDetalleDTO d, LocalDate fecha) {
 
-        if (lista.isEmpty()) {
-            throw new IllegalArgumentException("No hay registros para ese camión y departamento");
+        if (d.getCantidadRecibida().compareTo(d.getCantidadEsperada()) > 0) {
+            throw new IllegalArgumentException("Excede esperado");
         }
 
-        return construirRespuestaCompleta(lista);
+        if (d.getLote() == null || d.getLote().isBlank()) {
+            throw new IllegalArgumentException("Lote obligatorio");
+        }
+
+        if (d.getFechaCaducidad() == null || d.getFechaCaducidad().isBefore(fecha)) {
+            throw new IllegalArgumentException("Caducidad inválida");
+        }
     }
 
+    private void registrarDiscrepancia(RecepcionCedis r, RecepcionCedisDetalle d) {
+
+        DiscrepanciaRecepcion disc = new DiscrepanciaRecepcion();
+
+        disc.setNumeroCamion(r.getNumeroCamion());
+        disc.setDepartamento(r.getDepartamento().name());
+        disc.setTotalEsperado(d.getCantidadEsperada());
+        disc.setTotalRecibido(d.getCantidadRecibida());
+        disc.setTotalFaltante(
+                d.getCantidadEsperada().subtract(d.getCantidadRecibida())
+        );
+        disc.setFechaRegistro(LocalDate.now());
+
+        discrepanciaRepository.save(disc);
+    }
+
+    private boolean aplicaRpc(RecepcionCedis r, RecepcionCedisDetalle d) {
+        return (r.getDepartamento() == Departamento.FRUTAS
+                || r.getDepartamento() == Departamento.VERDURAS)
+                && d.getCantidadRpc() != null
+                && d.getCantidadRpc() > 0;
+    }
 }

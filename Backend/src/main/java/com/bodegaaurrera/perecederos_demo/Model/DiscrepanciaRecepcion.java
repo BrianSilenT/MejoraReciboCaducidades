@@ -3,6 +3,8 @@ package com.bodegaaurrera.perecederos_demo.Model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -17,9 +19,9 @@ public class DiscrepanciaRecepcion {
 
     private String numeroCamion;
     private String departamento;
-    private int totalEsperado;
-    private int totalRecibido;
-    private int totalFaltante;
+    private BigDecimal totalEsperado;
+    private BigDecimal totalRecibido;
+    private BigDecimal totalFaltante;
 
     private LocalDate fechaRegistro;
 }

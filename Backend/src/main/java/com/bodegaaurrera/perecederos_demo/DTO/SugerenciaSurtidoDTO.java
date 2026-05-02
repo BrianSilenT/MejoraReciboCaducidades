@@ -5,6 +5,7 @@ import com.bodegaaurrera.perecederos_demo.Enums.TipoAlerta;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -14,7 +15,7 @@ public class SugerenciaSurtidoDTO {
     private String codigoBarras;
     private String descripcion;
 
-    private int cantidadSolicitada;
+    private BigDecimal cantidadSolicitada;
 
     private TipoAlerta tipo;
     // URGENTE / SUGERENCIA / OK

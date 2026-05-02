@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,8 +20,8 @@ public class AuditoriaSurtido {
     private String upc;
     private String lote;
 
-    private int cantidadSugerida;
-    private int cantidadSurtida;
+    private BigDecimal cantidadSugerida;
+    private BigDecimal cantidadSurtida;
 
     private boolean correcto; // si respetó FEFO
 

@@ -4,7 +4,7 @@ public enum EstadoOrden {
     VIGENTE,
     PARCIAL,
     COMPLETADA,
-    EXPIRADA,
-    CANCELADA,
-    ACEPTADA
+    //EXPIRADA,
+   // CANCELADA,
+    //ACEPTADA
 }

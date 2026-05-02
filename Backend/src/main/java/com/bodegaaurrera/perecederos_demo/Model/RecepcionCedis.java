@@ -6,6 +6,8 @@ import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,8 +34,8 @@ public class RecepcionCedis {
     @Enumerated(EnumType.STRING)
     private Departamento departamento;
 
-    private int totalEsperado;
-    private int totalRecibido;
+    private BigDecimal totalEsperado;
+    private BigDecimal totalRecibido;
     private Double porcentajeAuditado;
 
     private boolean completa;

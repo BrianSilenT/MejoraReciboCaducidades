@@ -10,6 +10,7 @@ import com.bodegaaurrera.perecederos_demo.Repository.SugerenciaSurtidoRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,6 @@ public class AuditoriaSurtidoService {
     private final MovimientoInventarioRepository movimientoRepo;
     private final AuditoriaSurtidoRepository auditoriaRepo;
 
-
-
     public void auditar(String upc) {
 
         List<SugerenciaSurtido> sugerencias = sugerenciaRepo.findByUpc(upc);
@@ -34,23 +33,32 @@ public class AuditoriaSurtidoService {
                         .filter(m -> m.getTipoMovimiento() == TipoMovimiento.SURTIDO)
                         .toList();
 
-        Map<String, Integer> sugeridoPorLote = sugerencias.stream()
+        // AGRUPACIONES CON BIGDECIMAL
+        Map<String, BigDecimal> sugeridoPorLote = sugerencias.stream()
                 .collect(Collectors.groupingBy(
                         SugerenciaSurtido::getLote,
-                        Collectors.summingInt(SugerenciaSurtido::getCantidadSugerida)
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                SugerenciaSurtido::getCantidadSugerida,
+                                BigDecimal::add
+                        )
                 ));
 
-        Map<String, Integer> surtidoPorLote = movimientos.stream()
+        Map<String, BigDecimal> surtidoPorLote = movimientos.stream()
                 .collect(Collectors.groupingBy(
                         MovimientoInventario::getLote,
-                        Collectors.summingInt(MovimientoInventario::getCantidad)
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                MovimientoInventario::getCantidad,
+                                BigDecimal::add
+                        )
                 ));
 
-        // 🔥 comparar
+        // COMPARAR SUGERIDO VS SURTIDO
         for (String lote : sugeridoPorLote.keySet()) {
 
-            int sugerido = sugeridoPorLote.getOrDefault(lote, 0);
-            int surtido = surtidoPorLote.getOrDefault(lote, 0);
+            BigDecimal sugerido = sugeridoPorLote.getOrDefault(lote, BigDecimal.ZERO);
+            BigDecimal surtido = surtidoPorLote.getOrDefault(lote, BigDecimal.ZERO);
 
             AuditoriaSurtido a = new AuditoriaSurtido();
             a.setUpc(upc);
@@ -59,12 +67,14 @@ public class AuditoriaSurtidoService {
             a.setCantidadSurtida(surtido);
             a.setFecha(LocalDateTime.now());
 
-            if (surtido == 0) {
+            if (surtido.compareTo(BigDecimal.ZERO) == 0) {
                 a.setCorrecto(false);
                 a.setMotivo("No se surtió el lote sugerido");
-            } else if (surtido < sugerido) {
+
+            } else if (surtido.compareTo(sugerido) < 0) {
                 a.setCorrecto(false);
                 a.setMotivo("Surtido incompleto");
+
             } else {
                 a.setCorrecto(true);
                 a.setMotivo("Correcto");
@@ -73,7 +83,7 @@ public class AuditoriaSurtidoService {
             auditoriaRepo.save(a);
         }
 
-        // 🔥 detectar si surtió lote incorrecto
+        //  DETECTAR LOTES SURTIDOS QUE NO FUERON SUGERIDOS (rompe FEFO)
         for (String lote : surtidoPorLote.keySet()) {
 
             if (!sugeridoPorLote.containsKey(lote)) {
@@ -81,7 +91,7 @@ public class AuditoriaSurtidoService {
                 AuditoriaSurtido a = new AuditoriaSurtido();
                 a.setUpc(upc);
                 a.setLote(lote);
-                a.setCantidadSugerida(0);
+                a.setCantidadSugerida(BigDecimal.ZERO);
                 a.setCantidadSurtida(surtidoPorLote.get(lote));
                 a.setCorrecto(false);
                 a.setMotivo("Se surtió lote no sugerido (rompió FEFO)");

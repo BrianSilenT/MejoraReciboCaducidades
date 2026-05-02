@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -17,10 +18,10 @@ public class RecepcionCedisDetalleDTO {
     private String nombreProducto;
 
     @Min(value = 0, message = "La cantidad recibida no puede ser negativa")
-    private Integer cantidadRecibida;
+    private BigDecimal cantidadRecibida;
 
     @Min(value = 1, message = "La cantidad esperada debe ser mayor a 0")
-    private int cantidadEsperada; // 🔹 nuevo campo
+    private BigDecimal cantidadEsperada; //  nuevo campo
 
     private String lote;
 

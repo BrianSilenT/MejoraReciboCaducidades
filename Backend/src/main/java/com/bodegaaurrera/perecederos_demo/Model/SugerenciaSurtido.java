@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -22,7 +23,7 @@ public class SugerenciaSurtido {
 
     private String lote;
 
-    private int cantidadSugerida;
+    private BigDecimal cantidadSugerida;
 
     private LocalDate fechaCaducidad;
 
