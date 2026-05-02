@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -26,7 +27,7 @@ public class MovimientoInventario {
 
     private String lote;
 
-    private int cantidad;
+    private BigDecimal cantidad;
 
     @Enumerated(EnumType.STRING)
     private TipoMovimiento tipoMovimiento;

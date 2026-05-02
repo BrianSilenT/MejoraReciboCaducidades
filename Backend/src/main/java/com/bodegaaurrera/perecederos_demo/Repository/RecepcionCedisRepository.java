@@ -19,7 +19,7 @@ public interface RecepcionCedisRepository extends JpaRepository<RecepcionCedis, 
     List<RecepcionCedis> findByNumeroCamionAndDepartamento(String numeroCamion, Departamento departamento);
 
 
-    // ✅ Método correcto, sin static ni cuerpo
+    // Método correcto, sin static ni cuerpo
     @Query("SELECT DISTINCT r.numeroCamion FROM RecepcionCedis r WHERE r.estado = 'EN_DESEMBARQUE'")
     List<String> findCamionesDisponibles();
 

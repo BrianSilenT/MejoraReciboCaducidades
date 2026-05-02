@@ -2,6 +2,8 @@ package com.bodegaaurrera.perecederos_demo.DTO;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class AuditoriaSurtidoDTO {
 
@@ -9,7 +11,7 @@ public class AuditoriaSurtidoDTO {
     private String loteCorrecto;
     private String loteSurtido;
     private String usuario;
-    private int cantidad;
+    private BigDecimal cantidad;
 
     private boolean errorFEFO;
 

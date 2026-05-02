@@ -7,6 +7,8 @@ import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import com.bodegaaurrera.perecederos_demo.Model.*;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -69,17 +71,47 @@ public class RecepcionMapper {
 
     // --- DTO a Entidad (Para registrar) ---
 
-    public RecepcionCedis fromRequestToEntity(RecepcionCedisRequestDTO request, int totalRecibido) {
+
+    public RecepcionCedis fromRequestToEntity(
+            RecepcionCedisRequestDTO request,
+            BigDecimal totalRecibido
+    ) {
         RecepcionCedis recepcion = new RecepcionCedis();
+
         recepcion.setNumeroCamion(request.getNumeroCamion());
         recepcion.setDepartamento(Departamento.valueOf(request.getDepartamento().toUpperCase()));
         recepcion.setDivision(Division.valueOf(request.getDivision().toUpperCase()));
-        recepcion.setTotalEsperado(request.getTotalEsperado());
+
+        recepcion.setTotalEsperado(request.getTotalEsperado()); // ya debe ser BigDecimal
         recepcion.setFechaRecepcion(LocalDate.now());
+
         recepcion.setTotalRecibido(totalRecibido);
-        recepcion.setPorcentajeAuditado((totalRecibido * 100.0) / request.getTotalEsperado());
-        recepcion.setCompleta(totalRecibido == request.getTotalEsperado());
-        recepcion.setEstado(totalRecibido == request.getTotalEsperado() ? EstadoRecepcion.ACEPTADA : EstadoRecepcion.PARCIAL);
+
+        // 🔥 porcentaje seguro
+        if (request.getTotalEsperado().compareTo(BigDecimal.ZERO) == 0) {
+            recepcion.setPorcentajeAuditado(0.0);
+        } else {
+            double porcentaje = totalRecibido
+                    .divide(request.getTotalEsperado(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
+
+            recepcion.setPorcentajeAuditado(porcentaje);
+        }
+
+        // 🔥 estado correcto
+        if (totalRecibido.compareTo(BigDecimal.ZERO) == 0) {
+            recepcion.setEstado(EstadoRecepcion.RECHAZADA);
+        } else if (totalRecibido.compareTo(request.getTotalEsperado()) < 0) {
+            recepcion.setEstado(EstadoRecepcion.PARCIAL);
+        } else {
+            recepcion.setEstado(EstadoRecepcion.ACEPTADA);
+        }
+
+        recepcion.setCompleta(
+                totalRecibido.compareTo(request.getTotalEsperado()) == 0
+        );
+
         return recepcion;
     }
 

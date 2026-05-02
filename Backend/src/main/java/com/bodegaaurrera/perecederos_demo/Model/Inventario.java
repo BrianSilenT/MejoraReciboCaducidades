@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -23,7 +24,7 @@ public class Inventario {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
-    private int cantidad;
+    private BigDecimal cantidad;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaCaducidad;

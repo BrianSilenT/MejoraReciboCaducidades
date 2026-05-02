@@ -3,6 +3,7 @@ package com.bodegaaurrera.perecederos_demo.DTO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,6 +15,6 @@ public class RecepcionCedisDTO {
     private String division;         // nombre de la división
     private LocalDateTime fechaRegistro; // fecha/hora en que se creó la recepción
     private String estado;           // estado de la recepción (PARCIAL, FINALIZADA, etc.)
-    private int totalEsperado;       // total esperado según factura
-    private int totalRecibido;       // total recibido realmente
+    private BigDecimal totalEsperado;       // total esperado según factura
+    private BigDecimal totalRecibido;       // total recibido realmente
 }

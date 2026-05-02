@@ -5,6 +5,7 @@ import com.bodegaaurrera.perecederos_demo.Repository.DiscrepanciaRecepcionReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -14,15 +15,23 @@ public class DiscrepanciaService {
     private final DiscrepanciaRecepcionRepository discrepanciaRepository;
 
 
-    // ✅ Registrar discrepancia
     public DiscrepanciaRecepcion registrarDiscrepancia(DiscrepanciaRecepcion discrepancia) {
-        if (discrepancia.getTotalEsperado() <= 0) {
+
+        if (discrepancia.getTotalEsperado() == null ||
+                discrepancia.getTotalEsperado().compareTo(BigDecimal.ZERO) <= 0) {
+
             throw new IllegalArgumentException("El total esperado debe ser mayor a 0.");
         }
-        if (discrepancia.getTotalRecibido() < 0) {
+
+        if (discrepancia.getTotalRecibido() == null ||
+                discrepancia.getTotalRecibido().compareTo(BigDecimal.ZERO) < 0) {
+
             throw new IllegalArgumentException("El total recibido no puede ser negativo.");
         }
-        if (discrepancia.getTotalFaltante() < 0) {
+
+        if (discrepancia.getTotalFaltante() == null ||
+                discrepancia.getTotalFaltante().compareTo(BigDecimal.ZERO) < 0) {
+
             throw new IllegalArgumentException("El total faltante no puede ser negativo.");
         }
 

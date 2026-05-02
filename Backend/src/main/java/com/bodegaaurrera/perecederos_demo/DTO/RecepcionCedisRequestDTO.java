@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -22,7 +23,7 @@ public class RecepcionCedisRequestDTO {
     private String division;
 
     @Min(value = 1, message = "El total esperado debe ser mayor a 0")
-    private int totalEsperado;
+    private BigDecimal totalEsperado;
 
     @NotNull(message = "Los detalles son obligatorios")
     private List<RecepcionCedisDetalleDTO> detalles;

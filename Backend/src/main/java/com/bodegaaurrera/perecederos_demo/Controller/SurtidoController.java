@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/surtido")
@@ -18,7 +20,7 @@ public class SurtidoController {
     @GetMapping("/surtido/{upc}/{cantidad}")
     public ResponseEntity<SugerenciaSurtidoDTO> sugerir(
             @PathVariable String upc,
-            @PathVariable int cantidad) {
+            @PathVariable BigDecimal cantidad) {
 
         return ResponseEntity.ok(
                 surtidoService.sugerirSurtido(upc, cantidad)

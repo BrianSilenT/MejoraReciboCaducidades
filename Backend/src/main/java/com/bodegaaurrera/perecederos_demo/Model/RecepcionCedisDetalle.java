@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -28,8 +29,8 @@ public class RecepcionCedisDetalle {
     @JoinColumn(name = "idProducto")
     private Producto producto;
 
-    private int cantidadEsperada;   // 🔹 lo que CEDIS mandó
-    private Integer cantidadRecibida;   // 🔹 lo que auditor captura
+    private BigDecimal cantidadEsperada;   // 🔹 lo que CEDIS mandó
+    private BigDecimal cantidadRecibida;   // 🔹 lo que auditor captura
     private String lote;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

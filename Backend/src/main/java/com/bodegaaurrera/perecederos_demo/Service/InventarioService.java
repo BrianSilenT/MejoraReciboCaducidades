@@ -14,6 +14,7 @@ import com.bodegaaurrera.perecederos_demo.mapper.ProductoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -90,22 +91,27 @@ public class InventarioService {
 
         Producto producto = inventarios.get(0).getProducto();
 
-        int total = 0;
-        int pisoVenta = 0;
-        int bodega = 0;
+        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal pisoVenta = BigDecimal.ZERO;
+        BigDecimal bodega = BigDecimal.ZERO;
 
         Map<String, LoteDTO> mapaLotes = new HashMap<>();
 
         for (Inventario inv : inventarios) {
 
-            int cantidad = inv.getCantidad();
-            total += cantidad;
+            BigDecimal cantidad = inv.getCantidad();
 
-            // 🔥 ubicación real
+            if (cantidad == null) {
+                cantidad = BigDecimal.ZERO;
+            }
+
+            // 🔥 SUMAS CORRECTAS
+            total = total.add(cantidad);
+
             if (inv.getUbicacion() == Ubicacion.PISO_VENTA) {
-                pisoVenta += cantidad;
+                pisoVenta = pisoVenta.add(cantidad);
             } else {
-                bodega += cantidad;
+                bodega = bodega.add(cantidad);
             }
 
             // 🔥 key segura
@@ -116,9 +122,8 @@ public class InventarioService {
                 LoteDTO dto = new LoteDTO();
                 dto.setLote(loteStr);
                 dto.setFechaCaducidad(inv.getFechaCaducidad());
-                dto.setCantidad(0);
+                dto.setCantidad(BigDecimal.ZERO);
 
-                // 🔥 cálculo de días
                 if (inv.getFechaCaducidad() != null) {
                     long dias = ChronoUnit.DAYS.between(LocalDate.now(), inv.getFechaCaducidad());
                     dto.setDiasRestantes(dias);
@@ -128,8 +133,13 @@ public class InventarioService {
                 mapaLotes.put(key, dto);
             }
 
+            // 🔥 SUMA POR LOTE CORRECTA
             LoteDTO lote = mapaLotes.get(key);
-            lote.setCantidad(lote.getCantidad() + cantidad);
+
+            BigDecimal actual = lote.getCantidad();
+            if (actual == null) actual = BigDecimal.ZERO;
+
+            lote.setCantidad(actual.add(cantidad));
         }
 
         InventarioDetalleDTO response = new InventarioDetalleDTO();

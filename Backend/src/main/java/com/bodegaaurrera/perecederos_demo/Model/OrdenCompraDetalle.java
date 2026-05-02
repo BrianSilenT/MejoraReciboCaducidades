@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -33,6 +34,8 @@ public class OrdenCompraDetalle {
     @JoinColumn(name = "id_Producto")
     private Producto producto;
 
-    private Integer cantidadRecibida;
-    private int cantidadEsperada;
+    @Column(precision = 12, scale = 3)
+    private BigDecimal cantidadRecibida;
+    @Column(precision = 12, scale = 3)
+    private BigDecimal cantidadEsperada =BigDecimal.ZERO;
 }

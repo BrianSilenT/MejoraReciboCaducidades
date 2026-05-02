@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -46,9 +47,7 @@ public class RecepcionService {
         return recepcionRepository.save(recepcion);
     }
 
-    // ============================
     // CONFIRMAR (impacta inventario)
-    // ============================
     @Transactional
     public void confirmar(Long idRecepcion) {
 
@@ -71,7 +70,7 @@ public class RecepcionService {
             movimientoService.ejecutarMovimiento(
                     detalle.getProducto().getCodigoBarras(),
                     detalle.getLote(),
-                    detalle.getCantidadRecibida(),
+                    detalle.getCantidadRecibida(), //  ya BigDecimal
                     TipoMovimiento.RECEPCION,
                     null,
                     Ubicacion.BODEGA,
@@ -79,9 +78,9 @@ public class RecepcionService {
                     "Entrada proveedor"
             );
 
-            // 🔥 Actualizar cantidad recibida en OC
+            //  Actualizar cantidad recibida en OC
             ocDetalle.setCantidadRecibida(
-                    ocDetalle.getCantidadRecibida() + detalle.getCantidadRecibida()
+                    ocDetalle.getCantidadRecibida().add(detalle.getCantidadRecibida())
             );
         }
 
@@ -89,15 +88,13 @@ public class RecepcionService {
 
         actualizarEstadoOrden(orden);
 
-        // 🔥 persistir cambios
+        //  persistir cambios
         ordenCompraRepository.save(orden);
         recepcionRepository.save(recepcion);
     }
 
-    // ============================
-    // VALIDACIONES
-    // ============================
 
+    // VALIDACIONES
     private OrdenCompra validarOrdenVigente(Long idOrden) {
         OrdenCompra orden = ordenCompraRepository.findById(idOrden)
                 .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada"));
@@ -123,14 +120,18 @@ public class RecepcionService {
             throw new IllegalArgumentException("Vida útil menor a 10 días");
         }
 
-        if (detalle.getCantidadRecibida() <= 0) {
+        if (detalle.getCantidadRecibida() == null ||
+                detalle.getCantidadRecibida().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Cantidad inválida");
         }
     }
 
     private void validarCantidad(RecepcionDetalle detalle, OrdenCompraDetalle ocDetalle) {
 
-        if (detalle.getCantidadRecibida() + ocDetalle.getCantidadRecibida() > ocDetalle.getCantidadEsperada()) {
+        BigDecimal total = ocDetalle.getCantidadRecibida()
+                .add(detalle.getCantidadRecibida());
+
+        if (total.compareTo(ocDetalle.getCantidadEsperada()) > 0) {
             throw new IllegalArgumentException("Excede cantidad solicitada en la orden");
         }
     }
@@ -143,10 +144,9 @@ public class RecepcionService {
                 .orElseThrow(() -> new IllegalArgumentException("Producto no pertenece a la orden"));
     }
 
-    // ============================
-    // ESTADO DE ORDEN
-    // ============================
 
+
+    // ESTADO DE ORDEN
     private void actualizarEstadoOrden(OrdenCompra orden) {
 
         boolean completa = true;
@@ -154,9 +154,12 @@ public class RecepcionService {
 
         for (OrdenCompraDetalle det : orden.getDetalles()) {
 
-            if (det.getCantidadRecibida() == 0) {
+            BigDecimal recibida = det.getCantidadRecibida();
+            BigDecimal esperada = det.getCantidadEsperada();
+
+            if (recibida.compareTo(BigDecimal.ZERO) == 0) {
                 completa = false;
-            } else if (det.getCantidadRecibida() < det.getCantidadEsperada()) {
+            } else if (recibida.compareTo(esperada) < 0) {
                 completa = false;
                 parcial = true;
             }
@@ -166,13 +169,14 @@ public class RecepcionService {
             orden.setEstado(EstadoOrden.COMPLETADA);
         } else if (parcial) {
             orden.setEstado(EstadoOrden.PARCIAL);
+        } else {
+            orden.setEstado(EstadoOrden.VIGENTE); // mejor que "PENDIENTE"
         }
     }
 
-    // ============================
-    // CONSULTAS
-    // ============================
 
+
+    // CONSULTAS
     public List<Recepcion> listarTodas() {
         return recepcionRepository.findAll();
     }

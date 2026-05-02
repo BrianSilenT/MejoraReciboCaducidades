@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class MovimientoInventarioService {
@@ -23,11 +25,15 @@ public class MovimientoInventarioService {
     private final MovimientoInventarioRepository movimientoRepo;
     private final ProductoRepository productoRepository;
 
+    private BigDecimal safe(BigDecimal val) {
+        return val == null ? BigDecimal.ZERO : val;
+    }
+
     @Transactional
     public void ejecutarMovimiento(
             String upc,
             String lote,
-            int cantidad,
+            BigDecimal cantidad,
             TipoMovimiento tipo,
             Ubicacion origen,
             Ubicacion destino,
@@ -35,62 +41,103 @@ public class MovimientoInventarioService {
             String motivo
     ) {
 
-        // 🔐 Usuario
+        if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Cantidad inválida");
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String usuario = (auth != null && auth.isAuthenticated()
                 && !"anonymousUser".equals(auth.getName()))
                 ? auth.getName()
                 : "SYSTEM";
 
+        Inventario invOrigen = null;
+
+        if (origen != null) {
+            invOrigen = inventarioRepo
+                    .findByProductoCodigoBarrasAndLoteAndUbicacion(upc, lote, origen)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Inventario no encontrado en origen: " + origen));
+        }
 
         switch (tipo) {
 
+            // =========================
+            // RECEPCION
+            // =========================
             case RECEPCION -> {
 
                 Inventario destinoInv = buscarODefinirDestino(upc, lote, destino, null);
 
-                destinoInv.setCantidad(destinoInv.getCantidad() + cantidad);
+                destinoInv.setCantidad(
+                        safe(destinoInv.getCantidad()).add(cantidad)
+                );
+
                 inventarioRepo.save(destinoInv);
 
                 guardarMovimiento(destinoInv, cantidad, tipo, origen, destino, referencia, motivo, usuario);
             }
 
+            // =========================
+            // SURTIDO (BODEGA → PISO)
+            // =========================
             case SURTIDO -> {
 
-                Inventario invOrigen = obtenerOrigen(upc, lote, origen);
+                if (invOrigen == null) {
+                    throw new IllegalArgumentException("Origen requerido para surtido");
+                }
 
                 validarStock(invOrigen, cantidad);
 
-                invOrigen.setCantidad(invOrigen.getCantidad() - cantidad);
+                invOrigen.setCantidad(
+                        safe(invOrigen.getCantidad()).subtract(cantidad)
+                );
+
                 inventarioRepo.save(invOrigen);
 
                 Inventario destinoInv = buscarODefinirDestino(upc, lote, destino, invOrigen);
 
-                destinoInv.setCantidad(destinoInv.getCantidad() + cantidad);
+                destinoInv.setCantidad(
+                        safe(destinoInv.getCantidad()).add(cantidad)
+                );
+
                 inventarioRepo.save(destinoInv);
 
                 guardarMovimiento(invOrigen, cantidad, tipo, origen, destino, referencia, motivo, usuario);
             }
 
-            case MERMA, VENTA_MANUAL -> {
+            // =========================
+            // VENTA / MERMA (sale del sistema)
+            // =========================
+            case VENTA_MANUAL, MERMA -> {
 
-                Inventario invOrigen = obtenerOrigen(upc, lote, origen);
+                if (invOrigen == null) {
+                    throw new IllegalArgumentException("Origen requerido");
+                }
 
                 validarStock(invOrigen, cantidad);
 
-                invOrigen.setCantidad(invOrigen.getCantidad() - cantidad);
+                invOrigen.setCantidad(
+                        safe(invOrigen.getCantidad()).subtract(cantidad)
+                );
+
                 inventarioRepo.save(invOrigen);
 
                 guardarMovimiento(invOrigen, cantidad, tipo, origen, null, referencia, motivo, usuario);
             }
 
+            // =========================
+            // AJUSTE
+            // =========================
             case AJUSTE -> {
 
-                Inventario invOrigen = obtenerOrigen(upc, lote, origen);
+                if (invOrigen == null) {
+                    throw new IllegalArgumentException("Origen requerido");
+                }
 
-                int nuevaCantidad = invOrigen.getCantidad() + cantidad;
+                BigDecimal nuevaCantidad = safe(invOrigen.getCantidad()).add(cantidad);
 
-                if (nuevaCantidad < 0) {
+                if (nuevaCantidad.compareTo(BigDecimal.ZERO) < 0) {
                     throw new IllegalArgumentException("Ajuste deja inventario negativo");
                 }
 
@@ -101,24 +148,10 @@ public class MovimientoInventarioService {
             }
         }
     }
-    private Inventario obtenerOrigen(String upc, String lote, Ubicacion origen) {
 
-        if (origen == null) {
-            throw new IllegalArgumentException("Origen requerido para este movimiento");
-        }
-
-        return inventarioRepo
-                .findByProductoCodigoBarrasAndLoteAndUbicacion(upc, lote, origen)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Inventario no encontrado en origen: " + origen));
-    }
-
-    // ============================
-    // 🔧 MÉTODOS AUXILIARES
-    // ============================
-
-    private void validarStock(Inventario inv, int cantidad) {
-        if (inv.getCantidad() < cantidad) {
+    //metodos auxiliares
+    private void validarStock(Inventario inv, BigDecimal cantidad) {
+        if (safe(inv.getCantidad()).compareTo(cantidad) < 0) {
             throw new IllegalArgumentException("Stock insuficiente");
         }
     }
@@ -154,7 +187,7 @@ public class MovimientoInventarioService {
 
                     nuevo.setLote(lote);
                     nuevo.setUbicacion(destino);
-                    nuevo.setCantidad(0);
+                    nuevo.setCantidad(BigDecimal.ZERO);
 
                     return nuevo;
                 });
@@ -162,7 +195,7 @@ public class MovimientoInventarioService {
 
     private void guardarMovimiento(
             Inventario inv,
-            int cantidad,
+            BigDecimal cantidad,
             TipoMovimiento tipo,
             Ubicacion origen,
             Ubicacion destino,
