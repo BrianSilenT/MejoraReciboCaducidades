@@ -23,9 +23,6 @@ public class RecepcionDetalle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idDetalle;
 
-    @ManyToOne
-    @JoinColumn(name = "id_orden_detalle")
-    private OrdenCompraDetalle ordenDetalle;
 
     @ManyToOne
     @JoinColumn(name = "idRecepcion")
