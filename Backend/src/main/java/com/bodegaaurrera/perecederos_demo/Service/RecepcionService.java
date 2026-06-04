@@ -37,8 +37,15 @@ public class RecepcionService {
         recepcion.setEstado(EstadoRecepcion.BORRADOR);
 
         for (RecepcionDetalle detalle : recepcion.getDetalles()) {
-            // válida que pertenezca a la orden
-            buscarDetalleOrden(orden, detalle);
+
+            if (detalle.getOrdenCompraDetalle() == null) {
+                throw new IllegalArgumentException("Detalle sin relación a orden de compra");
+            }
+
+            if (!detalle.getOrdenCompraDetalle().getOrdenCompra().getIdOrden()
+                    .equals(orden.getIdOrden())) {
+                throw new IllegalArgumentException("El detalle no pertenece a la orden");
+            }
 
             validarDetalle(detalle, recepcion.getFechaRecepcion());
             detalle.setRecepcion(recepcion);
@@ -47,7 +54,9 @@ public class RecepcionService {
         return recepcionRepository.save(recepcion);
     }
 
+    // ============================
     // CONFIRMAR (impacta inventario)
+    // ============================
     @Transactional
     public void confirmar(Long idRecepcion) {
 
@@ -60,17 +69,26 @@ public class RecepcionService {
 
         OrdenCompra orden = recepcion.getOrdenCompra();
 
-        for (RecepcionDetalle detalle : recepcion.getProductos()) {
+        if (orden.getEstado() != EstadoOrden.VIGENTE &&
+                orden.getEstado() != EstadoOrden.PARCIAL) {
+            throw new IllegalArgumentException("La orden no está disponible para recepción");
+        }
 
-            OrdenCompraDetalle ocDetalle = buscarDetalleOrden(orden, detalle);
+        for (RecepcionDetalle detalle : recepcion.getDetalles()) {
+
+            OrdenCompraDetalle ocDetalle = detalle.getOrdenCompraDetalle();
+
+            if (ocDetalle == null) {
+                throw new IllegalArgumentException("Detalle sin referencia a orden de compra");
+            }
 
             validarCantidad(detalle, ocDetalle);
 
-            // 🔥 Actualizar inventario
+            // 🔥 INVENTARIO
             movimientoService.ejecutarMovimiento(
                     detalle.getProducto().getCodigoBarras(),
                     detalle.getLote(),
-                    detalle.getCantidadRecibida(), //  ya BigDecimal
+                    detalle.getCantidadRecibida(),
                     TipoMovimiento.RECEPCION,
                     null,
                     Ubicacion.BODEGA,
@@ -78,9 +96,13 @@ public class RecepcionService {
                     "Entrada proveedor"
             );
 
-            //  Actualizar cantidad recibida en OC
+            // 🔥 SUMAR RECIBIDO (null safe)
+            BigDecimal actual = ocDetalle.getCantidadRecibida() != null
+                    ? ocDetalle.getCantidadRecibida()
+                    : BigDecimal.ZERO;
+
             ocDetalle.setCantidadRecibida(
-                    ocDetalle.getCantidadRecibida().add(detalle.getCantidadRecibida())
+                    actual.add(detalle.getCantidadRecibida())
             );
         }
 
@@ -88,13 +110,13 @@ public class RecepcionService {
 
         actualizarEstadoOrden(orden);
 
-        //  persistir cambios
         ordenCompraRepository.save(orden);
         recepcionRepository.save(recepcion);
     }
 
-
+    // ============================
     // VALIDACIONES
+    // ============================
     private OrdenCompra validarOrdenVigente(Long idOrden) {
         OrdenCompra orden = ordenCompraRepository.findById(idOrden)
                 .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada"));
@@ -128,25 +150,20 @@ public class RecepcionService {
 
     private void validarCantidad(RecepcionDetalle detalle, OrdenCompraDetalle ocDetalle) {
 
-        BigDecimal total = ocDetalle.getCantidadRecibida()
-                .add(detalle.getCantidadRecibida());
+        BigDecimal actual = ocDetalle.getCantidadRecibida() != null
+                ? ocDetalle.getCantidadRecibida()
+                : BigDecimal.ZERO;
+
+        BigDecimal total = actual.add(detalle.getCantidadRecibida());
 
         if (total.compareTo(ocDetalle.getCantidadEsperada()) > 0) {
             throw new IllegalArgumentException("Excede cantidad solicitada en la orden");
         }
     }
 
-    private OrdenCompraDetalle buscarDetalleOrden(OrdenCompra orden, RecepcionDetalle detalle) {
-        return orden.getDetalles().stream()
-                .filter(d -> d.getProducto().getIdProducto()
-                        .equals(detalle.getProducto().getIdProducto()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Producto no pertenece a la orden"));
-    }
-
-
-
+    // ============================
     // ESTADO DE ORDEN
+    // ============================
     private void actualizarEstadoOrden(OrdenCompra orden) {
 
         boolean completa = true;
@@ -154,7 +171,10 @@ public class RecepcionService {
 
         for (OrdenCompraDetalle det : orden.getDetalles()) {
 
-            BigDecimal recibida = det.getCantidadRecibida();
+            BigDecimal recibida = det.getCantidadRecibida() != null
+                    ? det.getCantidadRecibida()
+                    : BigDecimal.ZERO;
+
             BigDecimal esperada = det.getCantidadEsperada();
 
             if (recibida.compareTo(BigDecimal.ZERO) == 0) {
@@ -170,13 +190,13 @@ public class RecepcionService {
         } else if (parcial) {
             orden.setEstado(EstadoOrden.PARCIAL);
         } else {
-            orden.setEstado(EstadoOrden.VIGENTE); // mejor que "PENDIENTE"
+            orden.setEstado(EstadoOrden.VIGENTE);
         }
     }
 
-
-
+    // ============================
     // CONSULTAS
+    // ============================
     public List<Recepcion> listarTodas() {
         return recepcionRepository.findAll();
     }

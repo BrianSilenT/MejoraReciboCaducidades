@@ -82,24 +82,21 @@ public class RecepcionMapper {
         recepcion.setDepartamento(Departamento.valueOf(request.getDepartamento().toUpperCase()));
         recepcion.setDivision(Division.valueOf(request.getDivision().toUpperCase()));
 
-        recepcion.setTotalEsperado(request.getTotalEsperado()); // ya debe ser BigDecimal
+        recepcion.setTotalEsperado(request.getTotalEsperado());
         recepcion.setFechaRecepcion(LocalDate.now());
-
         recepcion.setTotalRecibido(totalRecibido);
 
-        // 🔥 porcentaje seguro
         if (request.getTotalEsperado().compareTo(BigDecimal.ZERO) == 0) {
             recepcion.setPorcentajeAuditado(0.0);
         } else {
             double porcentaje = totalRecibido
-                    .divide(request.getTotalEsperado(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
+                    .divide(request.getTotalEsperado(), 2, RoundingMode.HALF_UP)
                     .doubleValue();
 
             recepcion.setPorcentajeAuditado(porcentaje);
         }
 
-        // 🔥 estado correcto
         if (totalRecibido.compareTo(BigDecimal.ZERO) == 0) {
             recepcion.setEstado(EstadoRecepcion.RECHAZADA);
         } else if (totalRecibido.compareTo(request.getTotalEsperado()) < 0) {

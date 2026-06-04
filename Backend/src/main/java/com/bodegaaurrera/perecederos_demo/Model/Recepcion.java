@@ -2,7 +2,6 @@ package com.bodegaaurrera.perecederos_demo.Model;
 
 import com.bodegaaurrera.perecederos_demo.Enums.EstadoRecepcion;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,8 +35,4 @@ public class Recepcion {
 
     private String usuario;
 
-    // 🔹 Relación con los productos recibidos
-    @OneToMany(mappedBy = "recepcion", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<RecepcionDetalle> productos;
 }
