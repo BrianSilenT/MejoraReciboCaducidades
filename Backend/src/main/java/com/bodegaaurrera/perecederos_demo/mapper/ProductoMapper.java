@@ -11,8 +11,11 @@ public class ProductoMapper {
         dto.setNombre(p.getNombre());
         dto.setCodigoBarras(p.getCodigoBarras());
         dto.setDescripcion(p.getDescripcion());
-        dto.setDepartamento(p.getDepartamento().name());
-        dto.setDivision(p.getDivision().name());
+
+        // Fix: null-check antes de .name() — productos sin clasificar no explotan
+        dto.setDepartamento(p.getDepartamento() != null ? p.getDepartamento().name() : null);
+        dto.setDivision(p.getDivision() != null ? p.getDivision().name() : null);
+
         return dto;
     }
 }

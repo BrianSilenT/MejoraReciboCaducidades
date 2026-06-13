@@ -17,7 +17,7 @@ public class SurtidoController {
 
     private final SurtidoService surtidoService;
 
-    @GetMapping("/surtido/{upc}/{cantidad}")
+    @GetMapping("/sugerir/{upc}/{cantidad}")
     public ResponseEntity<SugerenciaSurtidoDTO> sugerir(
             @PathVariable String upc,
             @PathVariable BigDecimal cantidad) {

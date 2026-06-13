@@ -6,7 +6,6 @@ import com.bodegaaurrera.perecederos_demo.Service.RecepcionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -16,18 +15,24 @@ public class RecepcionController {
 
     private final RecepcionService recepcionService;
 
-
-    // ✅ Registrar recepción de proveedor
+    // Registrar recepcion de proveedor
     @PostMapping
     public ApiResponse<Recepcion> registrarRecepcion(@RequestBody Recepcion recepcion) {
         Recepcion nueva = recepcionService.registrar(recepcion);
         return new ApiResponse<>(nueva);
     }
 
-    // ✅ Listar todas las recepciones
+    // Listar todas las recepciones
     @GetMapping
     public ApiResponse<List<Recepcion>> listarRecepciones() {
         List<Recepcion> recepciones = recepcionService.listarTodas();
         return new ApiResponse<>(recepciones);
+    }
+
+    // Confirmar recepcion — genera movimientos de inventario
+    @PutMapping("/confirmar/{id}")
+    public ApiResponse<String> confirmar(@PathVariable Long id) {
+        recepcionService.confirmar(id);
+        return new ApiResponse<>("Recepcion confirmada correctamente");
     }
 }
