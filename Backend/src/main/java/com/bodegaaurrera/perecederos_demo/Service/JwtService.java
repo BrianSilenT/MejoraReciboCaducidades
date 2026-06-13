@@ -3,6 +3,7 @@ package com.bodegaaurrera.perecederos_demo.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private static final long EXPIRACION_MS = 1000L * 60 * 60 * 24; // 24 horas
+
     private SecretKey getKey() {
-        String SECRET = "clave_super_secreta_clave_super_secreta_123456";
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String generarToken(UserDetails user) {
@@ -22,7 +27,7 @@ public class JwtService {
                 .subject(user.getUsername())
                 .claim("role", user.getAuthorities().iterator().next().getAuthority())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRACION_MS))
                 .signWith(getKey())
                 .compact();
     }
@@ -39,8 +44,13 @@ public class JwtService {
                 .getPayload();
     }
 
+    // CRITICO FIX: verificar expiración además del username
     public boolean validarToken(String token, UserDetails userDetails) {
         final String username = extraerUsername(token);
-        return username.equals(userDetails.getUsername());
+        return username.equals(userDetails.getUsername()) && !estaExpirado(token);
+    }
+
+    private boolean estaExpirado(String token) {
+        return extraerClaims(token).getExpiration().before(new Date());
     }
 }
