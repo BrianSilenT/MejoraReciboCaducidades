@@ -21,7 +21,7 @@ public class RecepcionCedisDetalle {
     private Long idDetalleCedis;
 
     @ManyToOne
-    @JoinColumn(name = "idRecepcionCedis")
+    @JoinColumn(name = "id_recepcion_cedis")
     @JsonIgnore
     private RecepcionCedis recepcionCedis;
 

@@ -17,13 +17,13 @@ public class RpcController {
     private final RpcService rpcService;
 
 
-
     // 1. Corregir el Resumen (Incompatible types)
     @GetMapping("/resumen")
     public ApiResponse<RpcResumenDTO> obtenerResumen() { // <-- Cambiado de Map a RpcResumenDTO
         return new ApiResponse<>(rpcService.obtenerResumen());
     }
     // BANDEJA 1: Lo que está en Cedis/Tienda (Enviado pero no vuelto)
+
     @GetMapping("/pendientes")
     public ApiResponse<List<RpcControl>> obtenerPendientes() {
         return new ApiResponse<>(rpcService.obtenerPendientes());

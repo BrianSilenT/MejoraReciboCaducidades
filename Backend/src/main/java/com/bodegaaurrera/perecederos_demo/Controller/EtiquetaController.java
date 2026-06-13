@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/etiquetas")
+@RequestMapping("/api/etiquetas")
 @RequiredArgsConstructor
 public class EtiquetaController {
 
